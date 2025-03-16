@@ -749,7 +749,23 @@
         const frameTime = 1000 / framesPerSecond;
         const framesPerMonth = monthDuration * framesPerSecond;
         let currentMonthTimer = 0;
-        
+
+      // Monthly counters to limit obstacle and powerup appearances
+let monthlyObstacleCounter = {
+    person: 0,
+    ad: 0,
+    food: 0
+};
+
+let monthlyPowerupCounter = {
+    money: 0,
+    earlyRise: 0,
+    earlySleep: 0,
+    healthyFood: 0,
+    exercise: 0,
+    companion: 0
+};
+      
         // Power-up variables
         const maxPowerUpTime = 900; // 15 seconds at 60fps
         let gameMessage = '';
@@ -928,172 +944,196 @@
         }
         
         // Create obstacle
-        function createObstacle() {
-            const types = ['person', 'ad', 'food'];
-            const type = types[getRandomInt(0, types.length - 1)];
-            
-            let obstacle;
-            
-            if (type === 'person') {
-                const negativeComments = [
-                    "קשה לחסוך עם משכורת כמו שלך",
-                    "אתה לא תצליח להגיע ליציבות פיננסית",
-                    "רוב האנשים לא מצליחים לחסוך",
-                    "אתה מפספס הנאות בגלל הקמצנות שלך",
-                    "חיסכון זה למעמד סוציו-אקונומי גבוה",
-                    "אף פעם לא תגיע ליעד של 100,000",
-                    "חיים רק פעם אחת, אל תחסוך ליום סגריר"
-                ];
-                
-                // Persuasive texts for negative people
-                const persuasiveTexts = [
-                    // First stage title and text set separately
-                    `מחקרים מראים שרוב האנשים לא מצליחים לחסוך בגלל מבנה מנטלי`, // Second stage
-                    `האם לא עדיף ליהנות מהכסף עכשיו במקום לחכות לעתיד לא בטוח?`, // Third stage
-                    `אתה נראה עייף, אולי תעשה לעצמך הפסקה קטנה מהחיסכון` // Fourth stage
-                ];
-                
-                obstacle = {
-                    x: canvas.width,
-                    y: ground.y - 80,
-                    width: 50,
-                    height: 80,
-                    type: type,
-                    speed: 4 + (currentMonth * 0.1),
-                    text: negativeComments[getRandomInt(0, negativeComments.length - 1)],
-                    value: getRandomInt(500, 1000), // Cost if hit
-                    mentalEffect: getRandomInt(5, 15), // How much it will reduce mental health
-                    persuasiveTexts: persuasiveTexts,
-                    obstacleTitle: "השפעה חברתית שלילית",
-                    initialText: "חבר מציע לך לוותר על תוכנית החיסכון שלך כדי ליהנות יותר מההווה. כיצד תגיב?"
-                };
-            } else if (type === 'ad') {
-                const adTexts = [
-                    "הצעה בלעדית! רק לזמן מוגבל!",
-                    "חיסול מלאי: הנחות של עד 70%!",
-                    "השקעה במראה שלך תעזור לך בקריירה",
-                    "חופשה מושלמת בתשלומים נוחים",
-                    "קורס שישפר את פוטנציאל ההכנסה שלך",
-                    "הטבה לבעלי כרטיס אשראי בלבד",
-                    "רכב חדש: במימון מלא ללא ריבית!"
-                ];
-                
-                // Persuasive texts for ads
-                const persuasiveTexts = [
-                    `זו הזדמנות חד פעמית שלא תחזור!`,
-                    `זו לא הוצאה, זו השקעה בעתיד שלך`,
-                    `אם תחכה תפספס את ההזדמנות הזו לגמרי`
-                ];
-                
-                obstacle = {
-                    x: canvas.width,
-                    y: ground.y - 70,
-                    width: 60,
-                    height: 70,
-                    type: type,
-                    speed: 5 + (currentMonth * 0.15),
-                    text: adTexts[getRandomInt(0, adTexts.length - 1)],
-                    value: getRandomInt(1000, 3000),
-                    persuasiveTexts: persuasiveTexts,
-                    obstacleTitle: "צריכה לא מתוכננת",
-                    initialText: "נחשפת להצעה שיווקית שמפתה אותך לביצוע רכישה לא מתוכננת. מה תעשה?"
-                };
-            } else if (type === 'food') {
-                const foodTypes = [
-                    "הזמנת משלוח מול בישול ביתי",
-                    "ארוחה יקרה במסעדה",
-                    "קפה ומאפה יומיים בדרך לעבודה",
-                    "קניות במכולת יקרה לעומת סופר זול",
-                    "אירוח חברים עם קייטרינג",
-                    "אלכוהול בבר במחירים מופקעים"
-                ];
-                
-                // Persuasive texts for food
-                const persuasiveTexts = [
-                    `אתה עובד קשה, מגיע לך להתפנק מדי פעם`,
-                    `חוויות חברתיות חשובות כמו חיסכון כספי`,
-                    `פעם אחת לא תשנה את המצב הפיננסי שלך`
-                ];
-                
-                obstacle = {
-                    x: canvas.width,
-                    y: ground.y - 60,
-                    width: 50,
-                    height: 60,
-                    type: type,
-                    speed: 3 + (currentMonth * 0.1),
-                    text: foodTypes[getRandomInt(0, foodTypes.length - 1)],
-                    value: getRandomInt(300, 1200),
-                    weightEffect: getRandomInt(5, 15), // How much it will reduce physical health
-                    persuasiveTexts: persuasiveTexts,
-                    obstacleTitle: "דילמת הוצאות מזון",
-                    initialText: "עומדת בפניך בחירה בין הוצאה גבוהה על מזון או אפשרות חסכונית יותר. מה תבחר?"
-                };
-            }
-            
-            obstacles.push(obstacle);
-        }
+function createObstacle() {
+    const types = ['person', 'ad', 'food'];
+    // Filter types that already appeared twice this month
+    const availableTypes = types.filter(type => monthlyObstacleCounter[type] < 2);
+    
+    // If no available types, exit function
+    if (availableTypes.length === 0) return;
+    
+    const type = availableTypes[getRandomInt(0, availableTypes.length - 1)];
+    
+    // Update counter for the selected type
+    monthlyObstacleCounter[type]++;
+    
+    let obstacle;
+    
+    if (type === 'person') {
+        const negativeComments = [
+            "קשה לחסוך עם משכורת כמו שלך",
+            "אתה לא תצליח להגיע ליציבות פיננסית",
+            "רוב האנשים לא מצליחים לחסוך",
+            "אתה מפספס הנאות בגלל הקמצנות שלך",
+            "חיסכון זה למעמד סוציו-אקונומי גבוה",
+            "אף פעם לא תגיע ליעד של 100,000",
+            "חיים רק פעם אחת, אל תחסוך ליום סגריר"
+        ];
+        
+        // Persuasive texts for negative people
+        const persuasiveTexts = [
+            // First stage title and text set separately
+            `מחקרים מראים שרוב האנשים לא מצליחים לחסוך בגלל מבנה מנטלי`, // Second stage
+            `האם לא עדיף ליהנות מהכסף עכשיו במקום לחכות לעתיד לא בטוח?`, // Third stage
+            `אתה נראה עייף, אולי תעשה לעצמך הפסקה קטנה מהחיסכון` // Fourth stage
+        ];
+        
+        obstacle = {
+            x: canvas.width,
+            y: ground.y - 80,
+            width: 50,
+            height: 80,
+            type: type,
+            speed: 4 + (currentMonth * 0.1),
+            text: negativeComments[getRandomInt(0, negativeComments.length - 1)],
+            value: getRandomInt(500, 1000), // Cost if hit
+            mentalEffect: getRandomInt(5, 15), // How much it will reduce mental health
+            persuasiveTexts: persuasiveTexts,
+            obstacleTitle: "השפעה חברתית שלילית",
+            initialText: "חבר מציע לך לוותר על תוכנית החיסכון שלך כדי ליהנות יותר מההווה. כיצד תגיב?"
+        };
+    } else if (type === 'ad') {
+        const adTexts = [
+            "הצעה בלעדית! רק לזמן מוגבל!",
+            "חיסול מלאי: הנחות של עד 70%!",
+            "השקעה במראה שלך תעזור לך בקריירה",
+            "חופשה מושלמת בתשלומים נוחים",
+            "קורס שישפר את פוטנציאל ההכנסה שלך",
+            "הטבה לבעלי כרטיס אשראי בלבד",
+            "רכב חדש: במימון מלא ללא ריבית!"
+        ];
+        
+        // Persuasive texts for ads
+        const persuasiveTexts = [
+            `זו הזדמנות חד פעמית שלא תחזור!`,
+            `זו לא הוצאה, זו השקעה בעתיד שלך`,
+            `אם תחכה תפספס את ההזדמנות הזו לגמרי`
+        ];
+        
+        obstacle = {
+            x: canvas.width,
+            y: ground.y - 70,
+            width: 60,
+            height: 70,
+            type: type,
+            speed: 5 + (currentMonth * 0.15),
+            text: adTexts[getRandomInt(0, adTexts.length - 1)],
+            value: getRandomInt(1000, 3000),
+            persuasiveTexts: persuasiveTexts,
+            obstacleTitle: "צריכה לא מתוכננת",
+            initialText: "נחשפת להצעה שיווקית שמפתה אותך לביצוע רכישה לא מתוכננת. מה תעשה?"
+        };
+    } else if (type === 'food') {
+        const foodTypes = [
+            "הזמנת משלוח מול בישול ביתי",
+            "ארוחה יקרה במסעדה",
+            "קפה ומאפה יומיים בדרך לעבודה",
+            "קניות במכולת יקרה לעומת סופר זול",
+            "אירוח חברים עם קייטרינג",
+            "אלכוהול בבר במחירים מופקעים"
+        ];
+        
+        // Persuasive texts for food
+        const persuasiveTexts = [
+            `אתה עובד קשה, מגיע לך להתפנק מדי פעם`,
+            `חוויות חברתיות חשובות כמו חיסכון כספי`,
+            `פעם אחת לא תשנה את המצב הפיננסי שלך`
+        ];
+        
+        obstacle = {
+            x: canvas.width,
+            y: ground.y - 60,
+            width: 50,
+            height: 60,
+            type: type,
+            speed: 3 + (currentMonth * 0.1),
+            text: foodTypes[getRandomInt(0, foodTypes.length - 1)],
+            value: getRandomInt(300, 1200),
+            weightEffect: getRandomInt(5, 15), // How much it will reduce physical health
+            persuasiveTexts: persuasiveTexts,
+            obstacleTitle: "דילמת הוצאות מזון",
+            initialText: "עומדת בפניך בחירה בין הוצאה גבוהה על מזון או אפשרות חסכונית יותר. מה תבחר?"
+        };
+    }
+    
+    obstacles.push(obstacle);
+}
         
         // Create powerup
-        function createPowerup() {
-            const types = ['money', 'earlyRise', 'earlySleep', 'healthyFood', 'exercise'];
-            const type = types[getRandomInt(0, types.length - 1)];
-            
-            let text = '';
-            let width = 40;
-            let height = 40;
-            let value = 1000;
-            
-            switch(type) {
-                case 'money':
-                    text = "בונוס כספי";
-                    value = getRandomInt(1000, 3000);
-                    break;
-                case 'earlyRise':
-                    text = "קימה מוקדמת";
-                    break;
-                case 'earlySleep':
-                    text = "שינה מוקדמת";
-                    break;
-                case 'healthyFood':
-                    text = "תזונה בריאה";
-                    break;
-                case 'exercise':
-                    text = "פעילות גופנית";
-                    break;
-            }
-            
-            const powerup = {
-                x: canvas.width,
-                y: getRandomInt(ground.y - 150, ground.y - 60),
-                width: width,
-                height: height,
-                type: type,
-                speed: 4, // Slower speed for longer game
-                text: text,
-                value: value,
-                healthEffect: type === 'healthyFood' || type === 'exercise' ? 10 : 0, // Improve physical health
-                mentalEffect: type === 'earlySleep' || type === 'earlyRise' ? 10 : 0 // Improve mental health
-            };
-            
-            powerups.push(powerup);
-        }
+function createPowerup() {
+    const types = ['money', 'earlyRise', 'earlySleep', 'healthyFood', 'exercise'];
+    // Filter types that already appeared twice this month
+    const availableTypes = types.filter(type => monthlyPowerupCounter[type] < 2);
+    
+    // If no available types, exit function
+    if (availableTypes.length === 0) return;
+    
+    const type = availableTypes[getRandomInt(0, availableTypes.length - 1)];
+    
+    // Update counter for the selected type
+    monthlyPowerupCounter[type]++;
+    
+    let text = '';
+    let width = 40;
+    let height = 40;
+    let value = 1000;
+    
+    switch(type) {
+        case 'money':
+            text = "בונוס כספי";
+            value = getRandomInt(1000, 3000);
+            break;
+        case 'earlyRise':
+            text = "קימה מוקדמת";
+            break;
+        case 'earlySleep':
+            text = "שינה מוקדמת";
+            break;
+        case 'healthyFood':
+            text = "תזונה בריאה";
+            break;
+        case 'exercise':
+            text = "פעילות גופנית";
+            break;
+    }
+    
+    const powerup = {
+        x: canvas.width,
+        y: getRandomInt(ground.y - 150, ground.y - 60),
+        width: width,
+        height: height,
+        type: type,
+        speed: 4, // Slower speed for longer game
+        text: text,
+        value: value,
+        healthEffect: type === 'healthyFood' || type === 'exercise' ? 10 : 0, // Improve physical health
+        mentalEffect: type === 'earlySleep' || type === 'earlyRise' ? 10 : 0 // Improve mental health
+    };
+    
+    powerups.push(powerup);
+}
         
         // Create companion
-        function createCompanion() {
-            const companion = {
-                x: canvas.width,
-                y: ground.y - 70,
-                width: 40,
-                height: 70,
-                speed: 4,
-                type: 'companion',
-                text: "תמיכה חברתית בדרך הפיננסית"
-            };
-            
-            powerups.push(companion);
-            showPopupMessage("תמיכה חברתית מתקרבת!", 2000);
-        }
+function createCompanion() {
+    // Check if companion already appeared twice this month
+    if (monthlyPowerupCounter.companion >= 2) return;
+    
+    // Update companion counter
+    monthlyPowerupCounter.companion++;
+    
+    const companion = {
+        x: canvas.width,
+        y: ground.y - 70,
+        width: 40,
+        height: 70,
+        speed: 4,
+        type: 'companion',
+        text: "תמיכה חברתית בדרך הפיננסית"
+    };
+    
+    powerups.push(companion);
+    showPopupMessage("תמיכה חברתית מתקרבת!", 2000);
+}
         
         // Show powerup dialog
         function showPowerupDialog(powerup) {
@@ -1471,6 +1511,21 @@
                 stats.mentalHealth = Math.min(100, stats.mentalHealth + 2);
                 stats.physicalHealth = Math.min(100, stats.physicalHealth + 2);
                 updatePlayerCondition();
+                // Reset monthly counters at the beginning of a new month
+    monthlyObstacleCounter = {
+        person: 0,
+        ad: 0,
+        food: 0
+    };
+    
+    monthlyPowerupCounter = {
+        money: 0,
+        earlyRise: 0,
+        earlySleep: 0,
+        healthyFood: 0,
+        exercise: 0,
+        companion: 0
+    };
                 
                 // Check win condition
                 if (score >= 100000) {
@@ -2301,6 +2356,21 @@
                 mentalHealth: 100,
                 physicalHealth: 100
             };
+            // Reset monthly counters
+monthlyObstacleCounter = {
+    person: 0,
+    ad: 0,
+    food: 0
+};
+
+monthlyPowerupCounter = {
+    money: 0,
+    earlyRise: 0,
+    earlySleep: 0,
+    healthyFood: 0,
+    exercise: 0,
+    companion: 0
+};
             
             // Reset achievements
             achievements = {
