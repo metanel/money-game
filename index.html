@@ -1,1 +1,2604 @@
-
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק המשמעת הפיננסית</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2a6496;
+            --secondary-color: #4a4a4a;
+            --success-color: #3a7a5f;
+            --warning-color: #d3873e;
+            --danger-color: #d45b5b;
+            --background-color: #f8f9fa;
+            --card-color: rgba(255, 255, 255, 0.95);
+            --text-color: #333333;
+            --text-light: #ffffff;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--background-color);
+            font-family: 'Open Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: #e9ecef;
+            touch-action: none;
+        }
+        
+        .game-display {
+            position: absolute;
+            padding: 10px 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        #score-display {
+            top: 15px;
+            right: 15px;
+            color: var(--primary-color);
+        }
+        
+        #date-display {
+            top: 15px;
+            left: 15px;
+            color: var(--secondary-color);
+        }
+        
+        #monthly-stats {
+            position: absolute;
+            top: 60px;
+            right: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            line-height: 1.6;
+            z-index: 10;
+        }
+        
+        #monthly-stats div {
+            margin-bottom: 5px;
+        }
+        
+        #tutorial-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 25px;
+            background-color: var(--card-color);
+            border-radius: 8px;
+            text-align: center;
+            z-index: 100;
+            max-width: 80%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            line-height: 1.6;
+        }
+        
+        .dialog-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--card-color);
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+            width: 80%;
+            max-width: 450px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            line-height: 1.6;
+        }
+        
+        .dialog-box h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 20px;
+        }
+        
+        .dialog-box p {
+            margin: 15px 0;
+            font-size: 16px;
+        }
+        
+        .dialog-box button {
+            margin: 8px;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.1s;
+            min-width: 100px;
+        }
+        
+        .dialog-box button:hover {
+            background-color: #1e5180;
+            transform: translateY(-2px);
+        }
+        
+        .dialog-box button.no-btn {
+            background-color: var(--danger-color);
+        }
+        
+        .dialog-box button.no-btn:hover {
+            background-color: #c04848;
+        }
+        
+        #obstacle-dialog {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--card-color);
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+            width: 80%;
+            max-width: 450px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        #obstacle-dialog h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        #obstacle-dialog p {
+            font-size: 16px;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        
+        #obstacle-dialog button {
+            margin: 8px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+        
+        #ignore-btn {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        #accept-btn {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        #ignore-btn:hover {
+            background-color: #2c6a4f;
+            transform: translateY(-2px);
+        }
+        
+        #accept-btn:hover {
+            background-color: #c77730;
+            transform: translateY(-2px);
+        }
+        
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(50, 50, 50, 0.95);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            line-height: 1.6;
+        }
+        
+        #game-over h2,
+        #win-screen h2 {
+            font-size: 24px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        #game-over button,
+        #win-screen button {
+            margin-top: 25px;
+            padding: 12px 28px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        
+        #game-over button:hover,
+        #win-screen button:hover {
+            background-color: #1e5180;
+            transform: translateY(-2px);
+        }
+        
+        #win-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(42, 100, 150, 0.95);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            line-height: 1.6;
+        }
+        
+        .popup-message {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            background-color: rgba(50, 50, 50, 0.9);
+            color: white;
+            border-radius: 25px;
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 20;
+            max-width: 80%;
+            text-align: center;
+        }
+        
+        .power-meter {
+            position: absolute;
+            bottom: 25px;
+            left: 20px;
+            width: 200px;
+            height: 12px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .power-meter-fill {
+            height: 100%;
+            background-color: var(--success-color);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .status-effect {
+            position: absolute;
+            top: 50%;  /* Center vertically */
+            left: 50%;  /* Center horizontally */
+            transform: translate(-50%, 150px);  /* Adjust vertical position */
+            background-color: rgba(50, 50, 50, 0.8);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            display: none;
+            margin: 0 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            z-index: 15;
+        }
+        
+        #status-negative {
+            background-color: rgba(212, 91, 91, 0.9);
+        }
+        
+        #status-weight {
+            background-color: rgba(211, 135, 62, 0.9);
+        }
+        
+        #speed-indicator {
+            position: absolute;
+            bottom: 25px;
+            right: 20px;
+            padding: 8px 15px;
+            background-color: rgba(50, 50, 50, 0.8);
+            color: white;
+            border-radius: 5px;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        #movement-instruction {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: rgba(50, 50, 50, 0.8);
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            display: none;
+            z-index: 15;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Health indicators in center */
+        .health-bars {
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            width: 260px;
+            text-align: center;
+        }
+        
+        .health-bar {
+            margin-bottom: 15px;
+        }
+        
+        .health-bar .label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--secondary-color);
+        }
+        
+        .health-bar .bar {
+            width: 100%;
+            height: 12px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .health-bar .fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        #physical-health-fill {
+            background-color: var(--success-color);
+        }
+        
+        #mental-health-fill {
+            background-color: var(--primary-color);
+        }
+        
+        .finance-tip {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: rgba(42, 100, 150, 0.85);
+            color: white;
+            border-radius: 5px;
+            font-size: 14px;
+            max-width: 80%;
+            text-align: center;
+            line-height: 1.4;
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 15;
+        }
+        
+        #powerup-dialog {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--card-color);
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+            width: 80%;
+            max-width: 450px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        #powerup-dialog h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        #powerup-dialog p {
+            font-size: 16px;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        
+        #powerup-dialog button {
+            margin: 8px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 80px;
+        }
+        
+        #powerup-yes-btn {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        #powerup-no-btn {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        #powerup-yes-btn:hover {
+            background-color: #2c6a4f;
+            transform: translateY(-2px);
+        }
+        
+        #powerup-no-btn:hover {
+            background-color: #c04848;
+            transform: translateY(-2px);
+        }
+        
+        .achievements-panel {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            display: none;
+            text-align: center;
+        }
+        
+        .achievement {
+            margin: 5px 0;
+            font-size: 14px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .game-display {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+            
+            .dialog-box {
+                width: 90%;
+                max-width: 400px;
+                padding: 20px;
+            }
+            
+            .dialog-box h3 {
+                font-size: 18px;
+            }
+            
+            .dialog-box p {
+                font-size: 14px;
+            }
+            
+            .dialog-box button {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
+            #tutorial-message {
+                font-size: 14px;
+                max-width: 95%;
+                padding: 20px;
+            }
+            
+            .power-meter {
+                width: 150px;
+                height: 10px;
+            }
+            
+            #obstacle-dialog {
+                width: 90%;
+                max-width: 400px;
+                padding: 20px;
+            }
+            
+            #obstacle-dialog p {
+                font-size: 14px;
+            }
+            
+            .health-bars {
+                width: 220px;
+                padding: 12px;
+                top: 100px;
+            }
+            
+            .finance-tip {
+                font-size: 12px;
+                padding: 8px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        <div id="score-display" class="game-display">סך נכסים פיננסיים: 0 ש"ח</div>
+        <div id="date-display" class="game-display">מרץ 2025</div>
+        
+        <div id="monthly-stats">
+            <div>הוצאות חודשיות: <span id="expenses">0</span> ש"ח</div>
+            <div>הכנסה חודשית: <span id="income">5,000</span> ש"ח</div>
+        </div>
+        
+        <div class="health-bars">
+            <div class="health-bar">
+                <div class="label">בריאות פיזית</div>
+                <div class="bar">
+                    <div id="physical-health-fill" class="fill" style="width: 100%;"></div>
+                </div>
+            </div>
+            <div class="health-bar">
+                <div class="label">בריאות מנטלית</div>
+                <div class="bar">
+                    <div id="mental-health-fill" class="fill" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="achievements" class="achievements-panel"></div>
+        
+        <div id="power-meter" class="power-meter">
+            <div id="power-meter-fill" class="power-meter-fill"></div>
+        </div>
+        
+        <div id="popup-message" class="popup-message"></div>
+        <div id="finance-tip" class="finance-tip"></div>
+        
+        <div id="status-negative" class="status-effect">השפעה מנטלית: חלש</div>
+        <div id="status-weight" class="status-effect">מצב גופני: כבד</div>
+        <div id="speed-indicator">מהירות: רגילה</div>
+        <div id="movement-instruction">לחץ על המסך להמשיך בדרך הפיננסית שלך</div>
+        
+        <!-- דיאלוג הפאוור-אפים החדש -->
+        <div id="powerup-dialog" class="dialog-box">
+            <h3 id="powerup-title">נתקלת בהזדמנות לשיפור!</h3>
+            <p id="powerup-text">האם עשית אימון כבר היום?</p>
+            <button id="powerup-yes-btn">כן</button>
+            <button id="powerup-no-btn">לא</button>
+        </div>
+        
+        <!-- דיאלוג המכשול המשודרג -->
+        <div id="obstacle-dialog" class="dialog-box">
+            <h3 id="obstacle-title">התמודדות עם דילמה פיננסית</h3>
+            <p id="obstacle-text">האם לבחור בהוצאה מיידית או להמשיך בתוכנית החיסכון?</p>
+            <button id="ignore-btn">סירוב</button>
+            <button id="accept-btn">הסכמה</button>
+        </div>
+        
+        <div id="tutorial-message">
+            <h3>ברוכים הבאים למשחק המשמעת הפיננסית</h3>
+            <p>המטרה שלך היא לצבור 100,000 ש"ח באמצעות התמדה והחלטות פיננסיות חכמות.</p>
+            <p>לחץ על המסך (או החזק מקש הרווח) כדי להתקדם בדרך הפיננסית. התקדמות דורשת מאמץ מתמיד.</p>
+            <p>אתה מרוויח 5,000 ש"ח בחודש מהעבודה היציבה שלך, אך תיתקל בדילמות ופיתויים לאורך הדרך.</p>
+            <p>קצב ההתקדמות שלך מושפע מהמצב הפיזי והמנטלי.</p>
+            <p>זכור - יציבות פיננסית היא מרתון, לא ספרינט. נדרשת משמעת והתמדה לאורך זמן.</p>
+            <button id="start-btn">התחל</button>
+        </div>
+        
+        <div id="job-offer" class="dialog-box">
+            <h3>הזדמנות קריירה חדשה</h3>
+            <p>האם לבחור בקריירה עם שכר גבוה יותר אך פחות יציבות?</p>
+            <button id="yes-btn">כן</button>
+            <button id="no-btn" class="no-btn">לא</button>
+        </div>
+        
+        <div id="job-offer-followup" class="dialog-box">
+            <h3>שקול שוב את החלטתך</h3>
+            <p id="followup-text">האם אתה בטוח שברצונך לדחות הזדמנות זו?</p>
+            <button id="followup-yes-btn">כן</button>
+            <button id="followup-no-btn" class="no-btn">לא</button>
+        </div>
+        
+        <div id="game-over">
+            <h2>ניהול פיננסי כושל</h2>
+            <p id="game-over-reason"></p>
+            <p>צברת סך של <span id="final-score">0</span> ש"ח בנכסים פיננסיים</p>
+            <div id="game-stats">
+                <p>תקופה שנוהלה: <span id="months-played">0</span> חודשים</p>
+                <p>הרגלים פיננסיים חיוביים: <span id="powerups-collected">0</span></p>
+                <p>דילמות פיננסיות שנפתרו: <span id="obstacles-avoided">0</span></p>
+            </div>
+            <p class="lesson">לקח: יציבות פיננסית דורשת משמעת, תכנון ארוך טווח והחלטות מושכלות.</p>
+            <button id="restart-btn">ניסיון חדש</button>
+        </div>
+        
+        <div id="win-screen">
+            <h2>יציבות פיננסית הושגה!</h2>
+            <p>הצלחת לצבור 100,000 ש"ח בנכסים פיננסיים!</p>
+            <p>כל הכבוד על המשמעת העצמית, ההתמדה וקבלת ההחלטות הנכונות.</p>
+            <div id="win-stats">
+                <p>תקופת צבירת הנכסים: <span id="win-months">0</span> חודשים</p>
+                <p>הרגלים פיננסיים חיוביים: <span id="win-powerups">0</span></p>
+                <p>דילמות פיננסיות שנפתרו: <span id="win-obstacles">0</span></p>
+            </div>
+            <p class="lesson">זכור: יציבות פיננסית היא תהליך מתמשך הדורש התמדה והחלטות מושכלות.</p>
+            <button id="play-again-btn">ניסיון נוסף</button>
+        </div>
+    </div>
+  <script>
+        // Canvas and context setup
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas to cover the window
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Game variables
+        let gameRunning = false;
+        let gamePaused = false;
+        let score = 0;
+        let currentMonth = 0;
+        let tutorialShown = true;
+        let isMoving = false; // Movement control
+        let moveTimer = null; // For instruction display timing
+        let financeMessageTimer = null; // For finance tips display
+        
+        // Game statistics
+        let stats = {
+            monthsPlayed: 0,
+            powerupsCollected: 0,
+            obstaclesAvoided: 0,
+            obstaclesFaced: 0,
+            expenses: 0,
+            income: 5000,  // Starting monthly income
+            mentalHealth: 100, // Mental state affects progress speed
+            physicalHealth: 100 // Physical state affects progress speed
+        };
+        
+        // Achievements
+        let achievements = {
+            firstMonth: { earned: false, text: "הישרדות חודש ראשון" },
+            saveHero: { earned: false, text: "חסכת 50,000 ש\"ח" },
+            powerCollector: { earned: false, text: "אימצת 10 הרגלים פיננסיים חיוביים" },
+            resistanceMaster: { earned: false, text: "פתרת 20 דילמות פיננסיות" },
+            mentalStrength: { earned: false, text: "שמרת על חוסן מנטלי גבוה" }
+        };
+        
+        // Financial tips to display periodically
+        const financialTips = [
+            "הקצאת 50 ש\"ח ליום לארוחות חוץ מסתכמת בכ-18,000 ש\"ח בשנה",
+            "70% מהצעירים שחוסכים 20% מהכנסתם מגיעים ליציבות פיננסית תוך 5 שנים",
+            "השקעה של 500 ש\"ח בחודש בגיל 23 יכולה להגיע לכמיליון ש\"ח בגיל פרישה",
+            "קרן חירום אידיאלית מכסה 3-6 חודשי הוצאות חיוניות",
+            "הוצאות קבועות לא צריכות לעלות על 50% מההכנסה החודשית נטו",
+            "הימנעות מהלוואות צרכניות בריבית גבוהה היא מפתח ליציבות פיננסית",
+            "רכישת מוצרים משומשים יכולה לחסוך עד 70% מעלותם החדשה",
+            "ליסינג תפעולי לרכב לרוב יקר יותר מרכישה ישירה של רכב בטווח הארוך",
+            "הפרשה לפנסיה בגיל מוקדם מגדילה משמעותית את החיסכון הסופי",
+            "בדיקה של כל ההוצאות החודשיות אחת לרבעון יכולה לחסוך מאות שקלים"
+        ];
+        
+        // Total months of simulation - extended game time
+        const totalMonths = 24; // March 2025 to March 2027
+        const monthNames = [
+            "מרץ 2025", "אפריל 2025", "מאי 2025", "יוני 2025", "יולי 2025", 
+            "אוגוסט 2025", "ספטמבר 2025", "אוקטובר 2025", "נובמבר 2025", "דצמבר 2025",
+            "ינואר 2026", "פברואר 2026", "מרץ 2026", "אפריל 2026", "מאי 2026", 
+            "יוני 2026", "יולי 2026", "אוגוסט 2026", "ספטמבר 2026", "אוקטובר 2026", 
+            "נובמבר 2026", "דצמבר 2026", "ינואר 2027", "פברואר 2027", "מרץ 2027"
+        ];
+        
+        // Month duration increased to 5 minutes per month (300 seconds)
+        const monthDuration = 300; // 5 minutes (300 seconds) per month
+        const framesPerSecond = 60;
+        const frameTime = 1000 / framesPerSecond;
+        const framesPerMonth = monthDuration * framesPerSecond;
+        let currentMonthTimer = 0;
+        
+        // Power-up variables
+        const maxPowerUpTime = 900; // 15 seconds at 60fps
+        let gameMessage = '';
+        let gameMessageTime = 0;
+        
+        // Player variables
+        const player = {
+            x: canvas.width * 0.2,
+            y: canvas.height * 0.7,
+            width: 50,
+            height: 80,
+            baseSpeed: 5, // Base speed
+            currentSpeed: 5, // Current speed affected by player condition
+            powerUp: false,
+            powerUpTime: 0,
+            powerUpType: '',
+            companion: false,
+            weight: 1, // Increases with unhealthy food, affects speed
+            mentalStrength: 1 // Decreases with negative mental effects, affects speed
+        };
+        
+        // Ground variables
+        const ground = {
+            y: canvas.height * 0.8,
+            width: canvas.width,
+            height: canvas.height * 0.2
+        };
+        
+        // Current powerup in dialog
+        let currentPowerup = null;
+        let powerupFollowupQuestions = [];
+        let powerupFollowupIndex = 0;
+        
+        // Arrays for game objects
+        let obstacles = [];
+        let powerups = [];
+        let pendingObstacles = [];  // For delayed creation
+        
+        // Obstacle dialog variables
+        let currentObstacle = null;
+        let lastObstacleTime = 0;
+        const minObstacleInterval = 5000; // Minimum time between obstacle dialogs (5 seconds)
+        let persuasionStage = 0; // Current persuasion stage
+        let persuasionTexts = []; // Persuasion texts per obstacle
+        
+        // Job offer variables
+        let jobOfferStage = 0;
+        const jobOfferTexts = [
+            "האם אתה בטוח שברצונך לדחות הזדמנות זו?",
+            "השכר גבוה ב-25% ותנאי הסוציאליים משופרים",
+            "ההזדמנות להתפתחות מקצועית משמעותית יותר",
+            "העבודה מציעה גמישות רבה יותר בשעות העבודה"
+        ];
+        
+        // Bonus questions for financial bonus powerup
+        const bonusQuestions = [
+            { 
+                question: "האם הגעת לעבודה בזמן כל השבוע?", 
+                positiveEffect: "אמינות ודייקנות הם ערכים חשובים למעסיק",
+                negativeEffect: "איחורים פוגעים בתדמית המקצועית שלך"
+            },
+            { 
+                question: "האם סיימת את כל המשימות שלך לפני הדדליין?", 
+                positiveEffect: "עמידה ביעדים מוכיחה יעילות ומקצועיות",
+                negativeEffect: "אי עמידה בזמנים פוגעת בהערכת הביצועים שלך"
+            },
+            { 
+                question: "האם עזרת לעמיתים לעבודה השבוע?", 
+                positiveEffect: "עבודת צוות טובה נלקחת בחשבון בהערכת עובדים",
+                negativeEffect: "שיתוף פעולה מוגבל מקטין את הערך שלך לארגון"
+            },
+            { 
+                question: "האם הבאת רעיון חדש או הצעת ייעול לעבודה?", 
+                positiveEffect: "יוזמה ויצירתיות מובילות לקידום מקצועי",
+                negativeEffect: "פסיביות בעבודה מגבילה את פוטנציאל הקידום שלך"
+            },
+            { 
+                question: "האם השקעת זמן בהרחבת הידע המקצועי שלך?", 
+                positiveEffect: "התפתחות אישית מגדילה את ערכך בשוק העבודה",
+                negativeEffect: "קיבעון מקצועי מגביל את האפשרויות העתידיות שלך"
+            }
+        ];
+        
+        // Helper for random number generation
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // Display popup message
+        function showPopupMessage(message, duration = 2000) {
+            const popup = document.getElementById('popup-message');
+            popup.textContent = message;
+            popup.style.opacity = '1';
+            
+            setTimeout(() => {
+                popup.style.opacity = '0';
+            }, duration);
+        }
+        
+        // Show financial tip
+        function showFinanceTip() {
+            if (financeMessageTimer) {
+                clearTimeout(financeMessageTimer);
+            }
+            
+            const tip = document.getElementById('finance-tip');
+            const randomTip = financialTips[Math.floor(Math.random() * financialTips.length)];
+            tip.textContent = randomTip;
+            tip.style.opacity = '1';
+            
+            financeMessageTimer = setTimeout(() => {
+                tip.style.opacity = '0';
+            }, 8000); // Show for 8 seconds
+        }
+        
+        // Update player's speed based on mental and physical health
+        function updatePlayerCondition() {
+            // Calculate weight effect (physical health)
+            let weightEffect = 1;
+            if (stats.physicalHealth < 80) {
+                weightEffect = 0.9;
+                document.getElementById('status-weight').style.display = 'block';
+                document.getElementById('status-weight').textContent = "מצב גופני: ירוד";
+            } else if (stats.physicalHealth < 60) {
+                weightEffect = 0.7;
+                document.getElementById('status-weight').style.display = 'block';
+                document.getElementById('status-weight').textContent = "מצב גופני: לקוי";
+            } else if (stats.physicalHealth < 40) {
+                weightEffect = 0.5;
+                document.getElementById('status-weight').style.display = 'block';
+                document.getElementById('status-weight').textContent = "מצב גופני: חמור";
+            } else {
+                document.getElementById('status-weight').style.display = 'none';
+            }
+            
+            // Calculate mental effect
+            let mentalEffect = 1;
+            if (stats.mentalHealth < 80) {
+                mentalEffect = 0.9;
+                document.getElementById('status-negative').style.display = 'block';
+                document.getElementById('status-negative').textContent = "מצב מנטלי: ירוד";
+            } else if (stats.mentalHealth < 60) {
+                mentalEffect = 0.7;
+                document.getElementById('status-negative').style.display = 'block';
+                document.getElementById('status-negative').textContent = "מצב מנטלי: לקוי";
+            } else if (stats.mentalHealth < 40) {
+                mentalEffect = 0.5;
+                document.getElementById('status-negative').style.display = 'block';
+                document.getElementById('status-negative').textContent = "מצב מנטלי: חמור";
+            } else {
+                document.getElementById('status-negative').style.display = 'none';
+            }
+            
+            // Update player speed
+            player.currentSpeed = player.baseSpeed * weightEffect * mentalEffect;
+            
+            // Update speed indicator
+            const speedIndicator = document.getElementById('speed-indicator');
+            if (player.currentSpeed < player.baseSpeed * 0.6) {
+                speedIndicator.textContent = 'התקדמות: איטית מאוד';
+                speedIndicator.style.backgroundColor = 'rgba(212, 91, 91, 0.9)';
+            } else if (player.currentSpeed < player.baseSpeed * 0.8) {
+                speedIndicator.textContent = 'התקדמות: איטית';
+                speedIndicator.style.backgroundColor = 'rgba(211, 135, 62, 0.9)';
+            } else if (player.currentSpeed < player.baseSpeed * 0.95) {
+                speedIndicator.textContent = 'התקדמות: בינונית';
+                speedIndicator.style.backgroundColor = 'rgba(214, 177, 45, 0.9)';
+            } else {
+                speedIndicator.textContent = 'התקדמות: אופטימלית';
+                speedIndicator.style.backgroundColor = 'rgba(50, 50, 50, 0.8)';
+            }
+            
+            // Update health bars
+            document.getElementById('physical-health-fill').style.width = `${stats.physicalHealth}%`;
+            document.getElementById('mental-health-fill').style.width = `${stats.mentalHealth}%`;
+        }
+        
+        // Create obstacle
+        function createObstacle() {
+            const types = ['person', 'ad', 'food'];
+            const type = types[getRandomInt(0, types.length - 1)];
+            
+            let obstacle;
+            
+            if (type === 'person') {
+                const negativeComments = [
+                    "קשה לחסוך עם משכורת כמו שלך",
+                    "אתה לא תצליח להגיע ליציבות פיננסית",
+                    "רוב האנשים לא מצליחים לחסוך",
+                    "אתה מפספס הנאות בגלל הקמצנות שלך",
+                    "חיסכון זה למעמד סוציו-אקונומי גבוה",
+                    "אף פעם לא תגיע ליעד של 100,000",
+                    "חיים רק פעם אחת, אל תחסוך ליום סגריר"
+                ];
+                
+                // Persuasive texts for negative people
+                const persuasiveTexts = [
+                    // First stage title and text set separately
+                    `מחקרים מראים שרוב האנשים לא מצליחים לחסוך בגלל מבנה מנטלי`, // Second stage
+                    `האם לא עדיף ליהנות מהכסף עכשיו במקום לחכות לעתיד לא בטוח?`, // Third stage
+                    `אתה נראה עייף, אולי תעשה לעצמך הפסקה קטנה מהחיסכון` // Fourth stage
+                ];
+                
+                obstacle = {
+                    x: canvas.width,
+                    y: ground.y - 80,
+                    width: 50,
+                    height: 80,
+                    type: type,
+                    speed: 4 + (currentMonth * 0.1),
+                    text: negativeComments[getRandomInt(0, negativeComments.length - 1)],
+                    value: getRandomInt(500, 1000), // Cost if hit
+                    mentalEffect: getRandomInt(5, 15), // How much it will reduce mental health
+                    persuasiveTexts: persuasiveTexts,
+                    obstacleTitle: "השפעה חברתית שלילית",
+                    initialText: "חבר מציע לך לוותר על תוכנית החיסכון שלך כדי ליהנות יותר מההווה. כיצד תגיב?"
+                };
+            } else if (type === 'ad') {
+                const adTexts = [
+                    "הצעה בלעדית! רק לזמן מוגבל!",
+                    "חיסול מלאי: הנחות של עד 70%!",
+                    "השקעה במראה שלך תעזור לך בקריירה",
+                    "חופשה מושלמת בתשלומים נוחים",
+                    "קורס שישפר את פוטנציאל ההכנסה שלך",
+                    "הטבה לבעלי כרטיס אשראי בלבד",
+                    "רכב חדש: במימון מלא ללא ריבית!"
+                ];
+                
+                // Persuasive texts for ads
+                const persuasiveTexts = [
+                    `זו הזדמנות חד פעמית שלא תחזור!`,
+                    `זו לא הוצאה, זו השקעה בעתיד שלך`,
+                    `אם תחכה תפספס את ההזדמנות הזו לגמרי`
+                ];
+                
+                obstacle = {
+                    x: canvas.width,
+                    y: ground.y - 70,
+                    width: 60,
+                    height: 70,
+                    type: type,
+                    speed: 5 + (currentMonth * 0.15),
+                    text: adTexts[getRandomInt(0, adTexts.length - 1)],
+                    value: getRandomInt(1000, 3000),
+                    persuasiveTexts: persuasiveTexts,
+                    obstacleTitle: "צריכה לא מתוכננת",
+                    initialText: "נחשפת להצעה שיווקית שמפתה אותך לביצוע רכישה לא מתוכננת. מה תעשה?"
+                };
+            } else if (type === 'food') {
+                const foodTypes = [
+                    "הזמנת משלוח מול בישול ביתי",
+                    "ארוחה יקרה במסעדה",
+                    "קפה ומאפה יומיים בדרך לעבודה",
+                    "קניות במכולת יקרה לעומת סופר זול",
+                    "אירוח חברים עם קייטרינג",
+                    "אלכוהול בבר במחירים מופקעים"
+                ];
+                
+                // Persuasive texts for food
+                const persuasiveTexts = [
+                    `אתה עובד קשה, מגיע לך להתפנק מדי פעם`,
+                    `חוויות חברתיות חשובות כמו חיסכון כספי`,
+                    `פעם אחת לא תשנה את המצב הפיננסי שלך`
+                ];
+                
+                obstacle = {
+                    x: canvas.width,
+                    y: ground.y - 60,
+                    width: 50,
+                    height: 60,
+                    type: type,
+                    speed: 3 + (currentMonth * 0.1),
+                    text: foodTypes[getRandomInt(0, foodTypes.length - 1)],
+                    value: getRandomInt(300, 1200),
+                    weightEffect: getRandomInt(5, 15), // How much it will reduce physical health
+                    persuasiveTexts: persuasiveTexts,
+                    obstacleTitle: "דילמת הוצאות מזון",
+                    initialText: "עומדת בפניך בחירה בין הוצאה גבוהה על מזון או אפשרות חסכונית יותר. מה תבחר?"
+                };
+            }
+            
+            obstacles.push(obstacle);
+        }
+        
+        // Create powerup
+        function createPowerup() {
+            const types = ['money', 'earlyRise', 'earlySleep', 'healthyFood', 'exercise'];
+            const type = types[getRandomInt(0, types.length - 1)];
+            
+            let text = '';
+            let width = 40;
+            let height = 40;
+            let value = 1000;
+            
+            switch(type) {
+                case 'money':
+                    text = "בונוס כספי";
+                    value = getRandomInt(1000, 3000);
+                    break;
+                case 'earlyRise':
+                    text = "קימה מוקדמת";
+                    break;
+                case 'earlySleep':
+                    text = "שינה מוקדמת";
+                    break;
+                case 'healthyFood':
+                    text = "תזונה בריאה";
+                    break;
+                case 'exercise':
+                    text = "פעילות גופנית";
+                    break;
+            }
+            
+            const powerup = {
+                x: canvas.width,
+                y: getRandomInt(ground.y - 150, ground.y - 60),
+                width: width,
+                height: height,
+                type: type,
+                speed: 4, // Slower speed for longer game
+                text: text,
+                value: value,
+                healthEffect: type === 'healthyFood' || type === 'exercise' ? 10 : 0, // Improve physical health
+                mentalEffect: type === 'earlySleep' || type === 'earlyRise' ? 10 : 0 // Improve mental health
+            };
+            
+            powerups.push(powerup);
+        }
+        
+        // Create companion
+        function createCompanion() {
+            const companion = {
+                x: canvas.width,
+                y: ground.y - 70,
+                width: 40,
+                height: 70,
+                speed: 4,
+                type: 'companion',
+                text: "תמיכה חברתית בדרך הפיננסית"
+            };
+            
+            powerups.push(companion);
+            showPopupMessage("תמיכה חברתית מתקרבת!", 2000);
+        }
+        
+        // Show powerup dialog
+        function showPowerupDialog(powerup) {
+            gamePaused = true;
+            currentPowerup = powerup;
+            powerupFollowupIndex = 0;
+            
+            // Set question based on powerup type
+            let question = "";
+            const powerupTitle = document.getElementById('powerup-title');
+            
+            switch(powerup.type) {
+                case 'exercise':
+                    powerupTitle.textContent = "הזדמנות לשיפור בריאותי";
+                    question = "האם עשית פעילות גופנית היום?";
+                    powerupFollowupQuestions = [];
+                    break;
+                case 'healthyFood':
+                    powerupTitle.textContent = "ניהול תזונה";
+                    question = "האם הקפדת על תזונה בריאה היום?";
+                    powerupFollowupQuestions = [];
+                    break;
+                case 'earlyRise':
+                    powerupTitle.textContent = "ניהול זמן יעיל";
+                    question = "האם קמת מוקדם היום?";
+                    powerupFollowupQuestions = [];
+                    break;
+                case 'earlySleep':
+                    powerupTitle.textContent = "הרגלי שינה";
+                    question = "האם דאגת לישון מספיק שעות אתמול?";
+                    powerupFollowupQuestions = [];
+                    break;
+                case 'money':
+                    powerupTitle.textContent = "הערכת ביצועים תעסוקתית";
+                    question = "האם נתת סיבה החודש למנהל שלך לתת לך בונוס כספי?";
+                    // Set followup questions for bonus
+                    powerupFollowupQuestions = [...bonusQuestions];
+                    // Shuffle the questions to get random ones each time
+                    for (let i = powerupFollowupQuestions.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [powerupFollowupQuestions[i], powerupFollowupQuestions[j]] = 
+                        [powerupFollowupQuestions[j], powerupFollowupQuestions[i]];
+                    }
+                    // Limit to 3 random questions
+                    powerupFollowupQuestions = powerupFollowupQuestions.slice(0, 3);
+                    break;
+                case 'companion':
+                    powerupTitle.textContent = "תמיכה חברתית";
+                    question = "האם אתה פתוח לקבל עזרה מאחרים בהתנהלות הפיננסית שלך?";
+                    powerupFollowupQuestions = [];
+                    break;
+            }
+            
+            document.getElementById('powerup-text').textContent = question;
+            document.getElementById('powerup-dialog').style.display = 'block';
+        }
+    // Handle powerup yes response
+        function powerupYesResponse() {
+            if (!currentPowerup) return;
+            
+            // If this is a bonus with followup questions
+            if (currentPowerup.type === 'money' && powerupFollowupQuestions.length > 0 && powerupFollowupIndex < powerupFollowupQuestions.length) {
+                // Show next question
+                document.getElementById('powerup-text').textContent = powerupFollowupQuestions[powerupFollowupIndex].question;
+                powerupFollowupIndex++;
+                return;
+            }
+            
+            // Apply the powerup effect based on the type
+            stats.powerupsCollected++;
+            
+            switch(currentPowerup.type) {
+                case 'money':
+                    let bonusAmount = currentPowerup.value;
+                    // If player answered followup questions, provide bigger bonus
+                    if (powerupFollowupQuestions.length > 0) {
+                        bonusAmount = Math.round(bonusAmount * (1 + 0.2 * powerupFollowupIndex));
+                    }
+                    
+                    score += bonusAmount;
+                    stats.income += bonusAmount / 5; // Distribute the bonus over time
+                    showPopupMessage(`קיבלת בונוס של ${bonusAmount} ש"ח!`, 2000);
+                    break;
+                case 'earlyRise':
+                case 'earlySleep':
+                    player.powerUp = true;
+                    player.powerUpTime = maxPowerUpTime;
+                    player.powerUpType = currentPowerup.type;
+                    document.getElementById('power-meter').style.display = 'block';
+                    
+                    // Improve mental health
+                    stats.mentalHealth = Math.min(100, stats.mentalHealth + currentPowerup.mentalEffect);
+                    showPopupMessage(`חיזוק פעיל: ${currentPowerup.type === 'earlyRise' ? 'ניהול זמן יעיל' : 'הרגלי שינה טובים'}`, 2000);
+                    break;
+                case 'healthyFood':
+                case 'exercise':
+                    player.powerUp = true;
+                    player.powerUpTime = maxPowerUpTime;
+                    player.powerUpType = currentPowerup.type;
+                    document.getElementById('power-meter').style.display = 'block';
+                    
+                    // Improve physical health
+                    stats.physicalHealth = Math.min(100, stats.physicalHealth + currentPowerup.healthEffect);
+                    showPopupMessage(`חיזוק פעיל: ${currentPowerup.type === 'healthyFood' ? 'תזונה מאוזנת' : 'כושר גופני'}`, 2000);
+                    break;
+                case 'companion':
+                    player.companion = true;
+                    player.powerUp = true;
+                    player.powerUpTime = maxPowerUpTime * 2; // Companion lasts longer
+                    player.powerUpType = 'companion';
+                    document.getElementById('power-meter').style.display = 'block';
+                    
+                    // Companion helps with both mental and physical health
+                    stats.mentalHealth = Math.min(100, stats.mentalHealth + 15);
+                    stats.physicalHealth = Math.min(100, stats.physicalHealth + 15);
+                    showPopupMessage("תמיכה חברתית מחזקת את החוסן האישי!", 2500);
+                    break;
+            }
+            
+            // Close the dialog and continue game
+            document.getElementById('powerup-dialog').style.display = 'none';
+            currentPowerup = null;
+            gamePaused = false;
+            
+            // Check achievement
+            if (stats.powerupsCollected >= 10 && !achievements.powerCollector.earned) {
+                achievements.powerCollector.earned = true;
+                addAchievement(achievements.powerCollector.text);
+            }
+            
+            // Update display
+            updatePlayerCondition();
+            updateDisplay();
+        }
+        
+        // Handle powerup no response
+        function powerupNoResponse() {
+            if (!currentPowerup) return;
+            
+            // If this is a bonus with followup questions
+            if (currentPowerup.type === 'money' && powerupFollowupQuestions.length > 0 && powerupFollowupIndex < powerupFollowupQuestions.length) {
+                // Show feedback for "no" answer
+                showPopupMessage(powerupFollowupQuestions[powerupFollowupIndex - 1].negativeEffect, 2500);
+                
+                // Show next question
+                if (powerupFollowupIndex < powerupFollowupQuestions.length) {
+                    document.getElementById('powerup-text').textContent = powerupFollowupQuestions[powerupFollowupIndex].question;
+                    powerupFollowupIndex++;
+                    return;
+                }
+            }
+            
+            // Apply negative effect based on type
+            switch(currentPowerup.type) {
+                case 'exercise':
+                    // Decrease physical health like unhealthy food
+                    stats.physicalHealth = Math.max(20, stats.physicalHealth - 10);
+                    showPopupMessage("העדר פעילות גופנית משפיע לרעה על בריאותך", 2500);
+                    break;
+                case 'healthyFood':
+                    // Decrease physical health
+                    stats.physicalHealth = Math.max(20, stats.physicalHealth - 10);
+                    showPopupMessage("תזונה לא מאוזנת פוגעת במצב הגופני", 2500);
+                    break;
+                case 'earlyRise':
+                case 'earlySleep':
+                    // Decrease mental health
+                    stats.mentalHealth = Math.max(20, stats.mentalHealth - 10);
+                    showPopupMessage("ניהול זמן לקוי משפיע על המצב המנטלי", 2500);
+                    break;
+                case 'money':
+                    // No bonus for poor performance
+                    showPopupMessage("פספסת הזדמנות לשיפור מצבך הפיננסי", 2500);
+                    break;
+                case 'companion':
+                    stats.mentalHealth = Math.max(20, stats.mentalHealth - 5);
+                    showPopupMessage("תמיכה חברתית חשובה ליציבות הנפשית", 2500);
+                    break;
+            }
+            
+            // Close the dialog and continue game
+            document.getElementById('powerup-dialog').style.display = 'none';
+            currentPowerup = null;
+            gamePaused = false;
+            
+            // Update display
+            updatePlayerCondition();
+            updateDisplay();
+        }
+        
+        // Apply powerup effect (when collecting without dialog)
+        function applyPowerup(powerup) {
+            // For modern gameplay with interaction, show dialog instead of direct application
+            showPowerupDialog(powerup);
+            return;
+        }
+        
+        // Show obstacle dialog with persuasive text
+        function showObstacleDialog(obstacle) {
+            // Pause the game
+            gamePaused = true;
+            currentObstacle = obstacle;
+            persuasionStage = 0; // Reset persuasion stage
+            
+            // Set dialog content - initial stage
+            document.getElementById('obstacle-title').textContent = obstacle.obstacleTitle;
+            document.getElementById('obstacle-text').textContent = obstacle.initialText;
+            
+            // Change button text to be more professional
+            document.getElementById('ignore-btn').textContent = "סירוב";
+            document.getElementById('accept-btn').textContent = "הסכמה";
+            
+            // Show dialog
+            document.getElementById('obstacle-dialog').style.display = 'block';
+        }
+        
+        // Continue to next persuasion stage
+        function continuePersuasion() {
+            if (!currentObstacle) return;
+            
+            persuasionStage++;
+            
+            // Check if we have more persuasive texts
+            if (persuasionStage <= currentObstacle.persuasiveTexts.length) {
+                // Update text for current stage
+                document.getElementById('obstacle-text').textContent = 
+                    currentObstacle.persuasiveTexts[persuasionStage - 1];
+                
+                // If this is the last stage, change the ignore button text
+                if (persuasionStage === currentObstacle.persuasiveTexts.length) {
+                    document.getElementById('ignore-btn').textContent = "החלטה סופית: סירוב";
+                } else {
+                    document.getElementById('ignore-btn').textContent = "סירוב";
+                }
+            } else {
+                // If no more texts, close the dialog
+                hideObstacleDialog();
+                stats.obstaclesAvoided++; // Increment obstacle resistance counter
+                
+                // Small mental boost for fully resisting
+                stats.mentalHealth = Math.min(100, stats.mentalHealth + 5);
+                updatePlayerCondition();
+                
+                // Show resistance message
+                showPopupMessage("קבלת החלטה פיננסית מושכלת!", 2500);
+                
+                // Check resistance achievement
+                if (stats.obstaclesAvoided >= 20 && !achievements.resistanceMaster.earned) {
+                    achievements.resistanceMaster.earned = true;
+                    addAchievement(achievements.resistanceMaster.text);
+                }
+            }
+        }
+        
+        // Handle accepting obstacle
+        function acceptObstacle() {
+            if (!currentObstacle) return;
+            
+            // Apply the negative effects
+            score -= currentObstacle.value;
+            stats.expenses += currentObstacle.value;
+            
+            // Apply specific effects based on obstacle type
+            if (currentObstacle.type === 'person') {
+                stats.mentalHealth -= currentObstacle.mentalEffect;
+                showPopupMessage(`לחץ חברתי השפיע עליך: -${currentObstacle.mentalEffect} נקודות חוסן מנטלי`, 2500);
+            } else if (currentObstacle.type === 'food') {
+                stats.physicalHealth -= currentObstacle.weightEffect;
+                showPopupMessage(`החלטה תזונתית לא מיטבית: -${currentObstacle.weightEffect} נקודות בריאות`, 2500);
+            } else {
+                showPopupMessage(`הוצאה בלתי מתוכננת: ${currentObstacle.value} ש"ח`, 2000);
+            }
+            
+            // Update obstacle interactions counter
+            stats.obstaclesFaced++;
+            
+            // Update player condition
+            updatePlayerCondition();
+            updateDisplay();
+            
+            // Reset and continue game
+            hideObstacleDialog();
+            
+            // Check if player is now bankrupt
+            if (score < 0) {
+                gameOver(`המאזן השלילי הוביל לקריסה פיננסית. הוצאת יותר מדי על ${currentObstacle.text}`);
+                return;
+            }
+            
+            // Check if mental or physical health is too low
+            if (stats.mentalHealth <= 20) {
+                gameOver("החוסן המנטלי שלך נפגע משמעותית. אינך מסוגל להמשיך.");
+                return;
+            }
+            
+            if (stats.physicalHealth <= 20) {
+                gameOver("בריאותך הפיזית נפגעה באופן חמור. קשה לך להמשיך בדרך.");
+                return;
+            }
+        }
+        
+        // Hide obstacle dialog and continue game
+        function hideObstacleDialog() {
+            document.getElementById('obstacle-dialog').style.display = 'none';
+            currentObstacle = null;
+            gamePaused = false;
+            persuasionStage = 0;
+            
+            // Reset ignore button text
+            document.getElementById('ignore-btn').textContent = "סירוב";
+        }
+        
+        // Collision detection
+        function checkCollision(obj1, obj2) {
+            return obj1.x < obj2.x + obj2.width &&
+                   obj1.x + obj1.width > obj2.x &&
+                   obj1.y < obj2.y + obj2.height &&
+                   obj1.y + obj1.height > obj2.y;
+        }
+        
+        // Handle obstacle hit
+        function hitObstacle(obstacle) {
+            // See if enough time has passed since last obstacle dialog
+            const now = Date.now();
+            if (now - lastObstacleTime < minObstacleInterval) {
+                // Too soon for another obstacle dialog
+                return true;
+            }
+            
+            // Show obstacle dialog
+            showObstacleDialog(obstacle);
+            lastObstacleTime = now;
+            
+            return true; // Obstacle is handled (will be removed in the main loop)
+        }
+        
+        // Update game state
+        function updateGame() {
+            if (!gameRunning || gamePaused) return;
+            
+            // Show financial tip periodically
+            if (Math.random() < 0.0003 && !financeMessageTimer) { // Approx every 5-6 minutes
+                showFinanceTip();
+            }
+            
+            // Update month timer only if player is moving (pressing screen)
+            if (isMoving) {
+                // Progress at speed adjusted to player condition
+                currentMonthTimer += player.currentSpeed / player.baseSpeed;
+                
+                // Movement instructions - show after 5 seconds of no movement
+                if (moveTimer) {
+                    clearTimeout(moveTimer);
+                    moveTimer = null;
+                    document.getElementById('movement-instruction').style.display = 'none';
+                }
+            } else {
+                // Show movement instructions if player doesn't move for a few seconds
+                if (!moveTimer && !tutorialShown) {
+                    moveTimer = setTimeout(() => {
+                        document.getElementById('movement-instruction').style.display = 'block';
+                    }, 5000);
+                }
+            }
+            
+            if (currentMonthTimer >= framesPerMonth) {
+                currentMonthTimer = 0;
+                currentMonth++;
+                stats.monthsPlayed++;
+                
+                // Add monthly income to score
+                score += stats.income;
+                
+                // Slightly recover mental and physical health each month
+                stats.mentalHealth = Math.min(100, stats.mentalHealth + 2);
+                stats.physicalHealth = Math.min(100, stats.physicalHealth + 2);
+                updatePlayerCondition();
+                
+                // Check win condition
+                if (score >= 100000) {
+                    winGame();
+                    return;
+                }
+                
+                // Update display
+                updateDisplay();
+                
+                // Maybe show job offer (15% chance each month)
+                if (Math.random() < 0.15) {
+                    showJobOffer();
+                }
+                
+                // Create monthly powerups
+                const monthlyTypes = ['money', 'earlyRise', 'earlySleep', 'healthyFood', 'exercise'];
+                monthlyTypes.forEach(type => {
+                    // Schedule powerups throughout the month
+                    setTimeout(() => {
+                        createCustomPowerup(type);
+                    }, getRandomInt(5, monthDuration * 0.7) * 1000);
+                });
+                
+                // Every 2 months, create a companion powerup
+                if (currentMonth % 2 === 0) {
+                    setTimeout(() => {
+                        createCompanion();
+                    }, getRandomInt(10, monthDuration * 0.6) * 1000);
+                }
+                
+                // First month achievement
+                if (currentMonth === 1 && !achievements.firstMonth.earned) {
+                    achievements.firstMonth.earned = true;
+                    addAchievement(achievements.firstMonth.text);
+                }
+                
+                // Check savings achievement
+                if (score >= 50000 && !achievements.saveHero.earned) {
+                    achievements.saveHero.earned = true;
+                    addAchievement(achievements.saveHero.text);
+                }
+                
+                // Check mental strength achievement
+                if (stats.mentalHealth >= 90 && currentMonth >= 5 && !achievements.mentalStrength.earned) {
+                    achievements.mentalStrength.earned = true;
+                    addAchievement(achievements.mentalStrength.text);
+                }
+            }
+            
+            // Update powerup status
+            if (player.powerUp) {
+                player.powerUpTime--;
+                
+                // Update power meter
+                const powerFill = document.getElementById('power-meter-fill');
+                const powerPercentage = (player.powerUpTime / maxPowerUpTime) * 100;
+                powerFill.style.width = `${Math.min(100, powerPercentage)}%`;
+                
+                if (player.powerUpTime <= 0) {
+                    player.powerUp = false;
+                    player.companion = false;
+                    document.getElementById('power-meter').style.display = 'none';
+                    showPopupMessage("השפעת החיזוק הסתיימה", 1500);
+                }
+            }
+            
+            // Update obstacles
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obstacle = obstacles[i];
+                
+                // Update position only if player is moving
+                if (isMoving) {
+                    obstacle.x -= obstacle.speed;
+                }
+                
+                // Check for collision
+                if (checkCollision(player, obstacle)) {
+                    const survived = hitObstacle(obstacle);
+                    obstacles.splice(i, 1);
+                    
+                    if (!survived) return; // Game over
+                }
+                
+                // Remove if off-screen
+                if (obstacle.x + obstacle.width < 0) {
+                    obstacles.splice(i, 1);
+                }
+            }
+            
+            // Update powerups
+            for (let i = powerups.length - 1; i >= 0; i--) {
+                const powerup = powerups[i];
+                
+                // Update position only if player is moving
+                if (isMoving) {
+                    powerup.x -= powerup.speed;
+                }
+                
+                // Check for collision
+                if (checkCollision(player, powerup)) {
+                    // Apply powerup effect
+                    applyPowerup(powerup);
+                    powerups.splice(i, 1);
+                }
+                
+                // Remove if off-screen
+                if (powerup.x + powerup.width < 0) {
+                    powerups.splice(i, 1);
+                }
+            }
+            
+            // Maybe create a new obstacle (0.3% chance per frame - slower for longer game)
+            if (Math.random() < 0.003 && isMoving) {
+                // Ensure there's enough distance from the last obstacle
+                let canCreateObstacle = true;
+                
+                for (let i = 0; i < obstacles.length; i++) {
+                    if (obstacles[i].x > canvas.width - 350) { // More space between obstacles
+                        canCreateObstacle = false;
+                        break;
+                    }
+                }
+                
+                if (canCreateObstacle) {
+                    createObstacle();
+                }
+            }
+            
+            // Maybe create a new powerup (0.1% chance per frame - fewer powerups)
+            if (Math.random() < 0.001 && isMoving) {
+                // Make sure powerups are spaced out
+                let canCreatePowerup = true;
+                
+                for (let i = 0; i < powerups.length; i++) {
+                    if (powerups[i].x > canvas.width - 400) { // More space between powerups
+                        canCreatePowerup = false;
+                        break;
+                    }
+                }
+                
+                if (canCreatePowerup) {
+                    createPowerup();
+                }
+            }
+            
+            // Process any pending obstacles
+            if (pendingObstacles.length > 0 && gameRunning && isMoving) {
+                const now = Date.now();
+                
+                for (let i = pendingObstacles.length - 1; i >= 0; i--) {
+                    if (now >= pendingObstacles[i].time) {
+                        createObstacle();
+                        pendingObstacles.splice(i, 1);
+                    }
+                }
+            }
+            
+            // Render game
+            renderGame();
+            
+            // Update game message time
+            if (gameMessageTime > 0) {
+                gameMessageTime--;
+                if (gameMessageTime <= 0) {
+                    gameMessage = '';
+                }
+            }
+        }
+    // Create a specific type of powerup
+        function createCustomPowerup(type) {
+            let text = '';
+            let width = 40;
+            let height = 40;
+            let value = 1000;
+            let healthEffect = 0;
+            let mentalEffect = 0;
+            
+            switch(type) {
+                case 'money':
+                    text = "בונוס כספי";
+                    value = getRandomInt(1000, 3000);
+                    break;
+                case 'earlyRise':
+                    text = "קימה מוקדמת";
+                    mentalEffect = 10;
+                    break;
+                case 'earlySleep':
+                    text = "שינה מוקדמת";
+                    mentalEffect = 15;
+                    break;
+                case 'healthyFood':
+                    text = "תזונה בריאה";
+                    healthEffect = 15;
+                    break;
+                case 'exercise':
+                    text = "פעילות גופנית";
+                    healthEffect = 20;
+                    break;
+            }
+            
+            const powerup = {
+                x: canvas.width,
+                y: getRandomInt(ground.y - 150, ground.y - 60),
+                width: width,
+                height: height,
+                type: type,
+                speed: 4,
+                text: text,
+                value: value,
+                healthEffect: healthEffect,
+                mentalEffect: mentalEffect
+            };
+            
+            powerups.push(powerup);
+        }
+        
+        // Render game
+        function renderGame() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw sky (minimalist gradient for more mature look)
+            const skyGradient = ctx.createLinearGradient(0, 0, 0, ground.y);
+            skyGradient.addColorStop(0, "#e9ecef");
+            skyGradient.addColorStop(1, "#dee2e6");
+            ctx.fillStyle = skyGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw subtle background patterns
+            drawBackgroundPatterns();
+            
+            // Draw ground
+            const groundGradient = ctx.createLinearGradient(0, ground.y, 0, canvas.height);
+            groundGradient.addColorStop(0, "#adb5bd");
+            groundGradient.addColorStop(1, "#6c757d");
+            ctx.fillStyle = groundGradient;
+            ctx.fillRect(0, ground.y, ground.width, ground.height);
+            
+            // Draw "stable career path" text on the ground
+            ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+            ctx.font = "bold 20px 'Open Sans', Arial";
+            ctx.textAlign = "center";
+            const text = "נתיב קריירה יציב";
+            
+            // Create pattern with the text repeating across the ground
+            const textWidth = ctx.measureText(text).width;
+            const repetitions = Math.ceil(canvas.width / (textWidth + 100));
+            
+            for (let i = 0; i < repetitions; i++) {
+                ctx.fillText(text, (textWidth + 100) * i + textWidth/2 + 50, ground.y + 40);
+            }
+            
+            ctx.textAlign = "start";
+            
+            // Draw path edge
+            ctx.fillStyle = "rgba(73, 80, 87, 0.7)";
+            ctx.fillRect(0, ground.y, ground.width, 5);
+            
+            // Draw player - minimalist style
+            drawPlayer();
+            
+            // Draw obstacles
+            obstacles.forEach(obstacle => {
+                switch(obstacle.type) {
+                    case 'person':
+                        // Draw influencer (negative influence) - more abstract shape
+                        ctx.fillStyle = "#6c757d";
+                        
+                        // Body as rounded rectangle
+                        roundRect(ctx, obstacle.x, obstacle.y, obstacle.width, obstacle.height, 10, true, false);
+                        
+                        // Head
+                        ctx.beginPath();
+                        ctx.arc(obstacle.x + obstacle.width/2, obstacle.y + obstacle.width/2, obstacle.width/2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Negative expression (minimalist)
+                        ctx.strokeStyle = "#e9ecef";
+                        ctx.lineWidth = 2;
+                        
+                        // Eyes
+                        ctx.beginPath();
+                        ctx.moveTo(obstacle.x + obstacle.width/3, obstacle.y + obstacle.width/2 - 5);
+                        ctx.lineTo(obstacle.x + obstacle.width/3 + 8, obstacle.y + obstacle.width/2 + 5);
+                        ctx.moveTo(obstacle.x + obstacle.width/3, obstacle.y + obstacle.width/2 + 5);
+                        ctx.lineTo(obstacle.x + obstacle.width/3 + 8, obstacle.y + obstacle.width/2 - 5);
+                        
+                        ctx.moveTo(obstacle.x + obstacle.width*2/3, obstacle.y + obstacle.width/2 - 5);
+                        ctx.lineTo(obstacle.x + obstacle.width*2/3 - 8, obstacle.y + obstacle.width/2 + 5);
+                        ctx.moveTo(obstacle.x + obstacle.width*2/3, obstacle.y + obstacle.width/2 + 5);
+                        ctx.lineTo(obstacle.x + obstacle.width*2/3 - 8, obstacle.y + obstacle.width/2 - 5);
+                        ctx.stroke();
+                        
+                        // Mouth (straight line)
+                        ctx.beginPath();
+                        ctx.moveTo(obstacle.x + obstacle.width/3, obstacle.y + obstacle.width/2 + 15);
+                        ctx.lineTo(obstacle.x + obstacle.width*2/3, obstacle.y + obstacle.width/2 + 15);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'ad':
+                        // Draw ad - modern minimalist style
+                        ctx.fillStyle = "#495057";
+                        roundRect(ctx, obstacle.x, obstacle.y, obstacle.width, obstacle.height, 8, true, false);
+                        
+                        // Draw ad icon
+                        ctx.fillStyle = "#e9ecef";
+                        ctx.textAlign = "center";
+                        ctx.font = "16px 'Open Sans', Arial";
+                        ctx.fillText("₪", obstacle.x + obstacle.width/2, obstacle.y + obstacle.height/2 + 5);
+                        
+                        // Shopping cart icon (minimalist)
+                        ctx.strokeStyle = "#e9ecef";
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        // Cart body
+                        ctx.moveTo(obstacle.x + obstacle.width/2 - 10, obstacle.y + obstacle.height/2 + 12);
+                        ctx.lineTo(obstacle.x + obstacle.width/2 + 10, obstacle.y + obstacle.height/2 + 12);
+                        ctx.lineTo(obstacle.x + obstacle.width/2 + 8, obstacle.y + obstacle.height/2 + 5);
+                        ctx.lineTo(obstacle.x + obstacle.width/2 - 8, obstacle.y + obstacle.height/2 + 5);
+                        ctx.closePath();
+                        ctx.stroke();
+                        // Wheels
+                        ctx.beginPath();
+                        ctx.arc(obstacle.x + obstacle.width/2 - 5, obstacle.y + obstacle.height/2 + 14, 2, 0, Math.PI * 2);
+                        ctx.arc(obstacle.x + obstacle.width/2 + 5, obstacle.y + obstacle.height/2 + 14, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        ctx.textAlign = "start";
+                        break;
+                        
+                    case 'food':
+                        // Draw food item - modern minimalist style
+                        ctx.fillStyle = "#6c757d";
+                        roundRect(ctx, obstacle.x, obstacle.y, obstacle.width, obstacle.height, 8, true, false);
+                        
+                        // Draw fork and knife icon
+                        ctx.strokeStyle = "#e9ecef";
+                        ctx.lineWidth = 2;
+                        
+                        // Fork
+                        ctx.beginPath();
+                        ctx.moveTo(obstacle.x + obstacle.width/3, obstacle.y + obstacle.height/4);
+                        ctx.lineTo(obstacle.x + obstacle.width/3, obstacle.y + obstacle.height/4 * 3);
+                        ctx.moveTo(obstacle.x + obstacle.width/3 - 5, obstacle.y + obstacle.height/4);
+                        ctx.lineTo(obstacle.x + obstacle.width/3 - 5, obstacle.y + obstacle.height/4 * 2);
+                        ctx.moveTo(obstacle.x + obstacle.width/3 + 5, obstacle.y + obstacle.height/4);
+                        ctx.lineTo(obstacle.x + obstacle.width/3 + 5, obstacle.y + obstacle.height/4 * 2);
+                        ctx.stroke();
+                        
+                        // Knife
+                        ctx.beginPath();
+                        ctx.moveTo(obstacle.x + obstacle.width*2/3, obstacle.y + obstacle.height/4);
+                        ctx.lineTo(obstacle.x + obstacle.width*2/3, obstacle.y + obstacle.height/4 * 3);
+                        ctx.moveTo(obstacle.x + obstacle.width*2/3 - 5, obstacle.y + obstacle.height/4);
+                        ctx.lineTo(obstacle.x + obstacle.width*2/3 + 5, obstacle.y + obstacle.height/4);
+                        ctx.stroke();
+                        break;
+                        
+                    default:
+                        // Default obstacle - minimalist style
+                        ctx.fillStyle = "#6c757d";
+                        roundRect(ctx, obstacle.x, obstacle.y, obstacle.width, obstacle.height, 8, true, false);
+                        break;
+                }
+            });
+            
+            // Draw powerups
+            powerups.forEach(powerup => {
+                let fillColor;
+                
+                switch(powerup.type) {
+                    case 'money':
+                        fillColor = "#2a6496";
+                        break;
+                    case 'earlyRise':
+                        fillColor = "#3a7a5f";
+                        break;
+                    case 'earlySleep':
+                        fillColor = "#5a5a8f";
+                        break;
+                    case 'healthyFood':
+                        fillColor = "#3a7a5f";
+                        break;
+                    case 'exercise':
+                        fillColor = "#d3873e";
+                        break;
+                    case 'companion':
+                        fillColor = "#2a6496";
+                        break;
+                    default:
+                        fillColor = "#6c757d";
+                }
+                
+                // Draw the powerup with different shapes based on type
+                if (powerup.type === 'money') {
+                    // Draw financial bonus - minimalist style
+                    ctx.fillStyle = fillColor;
+                    roundRect(ctx, powerup.x, powerup.y, powerup.width, powerup.height, 20, true, false);
+                    
+                    // Shekel sign
+                    ctx.fillStyle = "#e9ecef";
+                    ctx.font = "bold 18px 'Open Sans', Arial";
+                    ctx.textAlign = "center";
+                    ctx.fillText("₪", powerup.x + powerup.width/2, powerup.y + powerup.height/2 + 6);
+                    ctx.textAlign = "start";
+                } else if (powerup.type === 'companion') {
+                    // Draw supportive character - minimalist style
+                    ctx.fillStyle = fillColor;
+                    
+                    // Body
+                    roundRect(ctx, powerup.x, powerup.y + powerup.height/3, powerup.width, powerup.height*2/3, 8, true, false);
+                    
+                    // Head
+                    ctx.beginPath();
+                    ctx.arc(powerup.x + powerup.width/2, powerup.y + powerup.height/4, powerup.width/3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Friendly face
+                    ctx.strokeStyle = "#e9ecef";
+                    ctx.lineWidth = 1.5;
+                    
+                    // Eyes
+                    ctx.beginPath();
+                    ctx.arc(powerup.x + powerup.width/3, powerup.y + powerup.height/4, 2, 0, Math.PI * 2);
+                    ctx.arc(powerup.x + powerup.width*2/3, powerup.y + powerup.height/4, 2, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    // Smile
+                    ctx.beginPath();
+                    ctx.arc(powerup.x + powerup.width/2, powerup.y + powerup.height/4 + 2, powerup.width/5, 0, Math.PI);
+                    ctx.stroke();
+                } else {
+                    // Draw other powerups - minimalist icons
+                    ctx.fillStyle = fillColor;
+                    roundRect(ctx, powerup.x, powerup.y, powerup.width, powerup.height, 8, true, false);
+                    
+                    // Different icons for different powerups
+                    ctx.strokeStyle = "#e9ecef";
+                    ctx.lineWidth = 2;
+                    
+                    if (powerup.type === 'earlyRise') {
+                        // Alarm clock icon
+                        ctx.beginPath();
+                        ctx.arc(powerup.x + powerup.width/2, powerup.y + powerup.height/2, powerup.width/3, 0, Math.PI * 2);
+                        ctx.stroke();
+                        
+                        // Clock hands
+                        ctx.beginPath();
+                        ctx.moveTo(powerup.x + powerup.width/2, powerup.y + powerup.height/2);
+                        ctx.lineTo(powerup.x + powerup.width/2 + powerup.width/5, powerup.y + powerup.height/2 - powerup.height/5);
+                        ctx.moveTo(powerup.x + powerup.width/2, powerup.y + powerup.height/2);
+                        ctx.lineTo(powerup.x + powerup.width/2 - powerup.width/8, powerup.y + powerup.height/2 + powerup.height/8);
+                        ctx.stroke();
+                    } else if (powerup.type === 'earlySleep') {
+                        // Moon icon
+                        ctx.beginPath();
+                        ctx.arc(powerup.x + powerup.width/2, powerup.y + powerup.height/2, powerup.width/3, 0, Math.PI * 2);
+                        ctx.stroke();
+                        
+                        // Z's for sleep
+                        ctx.beginPath();
+                        ctx.moveTo(powerup.x + powerup.width/2 + 5, powerup.y + powerup.height/2 - 8);
+                        ctx.lineTo(powerup.x + powerup.width/2 - 5, powerup.y + powerup.height/2 - 8);
+                        ctx.lineTo(powerup.x + powerup.width/2 + 5, powerup.y + powerup.height/2);
+                        ctx.lineTo(powerup.x + powerup.width/2 - 5, powerup.y + powerup.height/2);
+                        ctx.stroke();
+                    } else if (powerup.type === 'healthyFood') {
+                        // Apple icon
+                        ctx.beginPath();
+                        ctx.arc(powerup.x + powerup.width/2, powerup.y + powerup.height/2 + 2, powerup.width/3, 0, Math.PI * 2);
+                        ctx.stroke();
+                        
+                        // Stem
+                        ctx.beginPath();
+                        ctx.moveTo(powerup.x + powerup.width/2, powerup.y + powerup.height/2 - powerup.height/5);
+                        ctx.lineTo(powerup.x + powerup.width/2, powerup.y + powerup.height/2 - powerup.height/3);
+                        ctx.stroke();
+                        
+                        // Leaf
+                        ctx.beginPath();
+                        ctx.arc(powerup.x + powerup.width/2 + 5, powerup.y + powerup.height/2 - powerup.height/4, 3, 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else if (powerup.type === 'exercise') {
+                        // Dumbbell icon
+                        
+                        // Left weight
+                        ctx.beginPath();
+                        ctx.arc(powerup.x + powerup.width/4, powerup.y + powerup.height/2, powerup.width/6, 0, Math.PI * 2);
+                        ctx.stroke();
+                        
+                        // Right weight
+                        ctx.beginPath();
+                        ctx.arc(powerup.x + powerup.width*3/4, powerup.y + powerup.height/2, powerup.width/6, 0, Math.PI * 2);
+                        ctx.stroke();
+                        
+                        // Handle
+                        ctx.beginPath();
+                        ctx.moveTo(powerup.x + powerup.width/4, powerup.y + powerup.height/2);
+                        ctx.lineTo(powerup.x + powerup.width*3/4, powerup.y + powerup.height/2);
+                        ctx.stroke();
+                    }
+                }
+            });
+            
+            // Draw month progress bar
+            const progressWidth = 300;
+            const progressHeight = 8;
+            const progressX = (canvas.width - progressWidth) / 2;
+            const progressY = 60;
+            
+            // Background
+            ctx.fillStyle = "rgba(222, 226, 230, 0.6)";
+            roundRect(ctx, progressX, progressY, progressWidth, progressHeight, 4, true, false);
+            
+            // Progress
+            const progress = currentMonthTimer / framesPerMonth;
+            ctx.fillStyle = "rgba(42, 100, 150, 0.8)";
+            if (progress > 0) {
+                roundRect(ctx, progressX, progressY, progressWidth * progress, progressHeight, 4, true, false);
+            }
+            
+            // Draw running animation if player is moving
+            if (isMoving) {
+                // Draw motion lines behind player - more subtle for mature look
+                ctx.strokeStyle = "rgba(108, 117, 125, 0.4)";
+                ctx.lineWidth = 1.5;
+                
+                const motionX = player.x - 30;
+                
+                for (let i = 0; i < 4; i++) {
+                    const lineY = player.y + 20 + i * 15;
+                    const lineLength = 8 + i * 4;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(motionX, lineY);
+                    ctx.lineTo(motionX - lineLength, lineY);
+                    ctx.stroke();
+                }
+            }
+            
+            // Draw game messages if any
+            if (gameMessage && gameMessageTime > 0) {
+                const alpha = Math.min(1, gameMessageTime / 100);
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = "#495057";
+                ctx.font = "18px 'Open Sans', Arial";
+                ctx.textAlign = "center";
+                ctx.fillText(gameMessage, canvas.width/2, canvas.height/2);
+                ctx.textAlign = "start";
+                ctx.globalAlpha = 1.0;
+            }
+        }
+        
+        // Helper function for rounded rectangles
+        function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+            if (typeof stroke === 'undefined') {
+                stroke = true;
+            }
+            if (typeof radius === 'undefined') {
+                radius = 5;
+            }
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            if (fill) {
+                ctx.fill();
+            }
+            if (stroke) {
+                ctx.stroke();
+            }
+        }
+        
+        // Draw background patterns - subtle professional design
+        function drawBackgroundPatterns() {
+            ctx.fillStyle = "rgba(222, 226, 230, 0.2)";
+            
+            // Draw subtle grid pattern
+            ctx.beginPath();
+            for (let i = 0; i < canvas.width; i += 40) {
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, ground.y);
+            }
+            for (let i = 0; i < ground.y; i += 40) {
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+            }
+            ctx.strokeStyle = "rgba(108, 117, 125, 0.05)";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            
+            // Add subtle visual elements representing financial graph
+            ctx.strokeStyle = "rgba(42, 100, 150, 0.1)";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            // Draw financial graph line in background
+            ctx.moveTo(0, ground.y - 100);
+            for (let x = 50; x < canvas.width; x += 50) {
+                const y = ground.y - 100 - Math.sin(x / 200) * 50 - Math.random() * 20;
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+        
+        // Draw player
+        function drawPlayer() {
+            // Use health factor to subtly adjust player appearance, not size
+            const healthFactor = stats.physicalHealth / 100;
+            const mentalFactor = stats.mentalHealth / 100;
+            
+            // Calculate player color based on health - subtle shift
+            const r = Math.floor(73 + (1 - healthFactor) * 40);
+            const g = Math.floor(80 + (1 - healthFactor) * 10);
+            const b = Math.floor(87 + (healthFactor) * 10);
+            const playerColor = `rgb(${r}, ${g}, ${b})`;
+            
+            // Draw player - minimalist style
+            ctx.fillStyle = playerColor;
+            
+            // Body as simple rounded rectangle
+            roundRect(ctx, player.x, player.y, player.width, player.height, 10, true, false);
+            
+            // Head
+            ctx.beginPath();
+            ctx.arc(player.x + player.width/2, player.y + player.width/2, player.width/2.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Facial expression based on mental health - minimalist style
+            ctx.strokeStyle = "#e9ecef";
+            ctx.lineWidth = 2;
+            
+            // Eyes
+            ctx.beginPath();
+            ctx.arc(player.x + player.width/2 - 8, player.y + player.width/2 - 3, 2, 0, Math.PI * 2);
+            ctx.arc(player.x + player.width/2 + 8, player.y + player.width/2 - 3, 2, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Mouth based on mental state
+            if (mentalFactor < 0.5) {
+                // Sad expression
+                ctx.beginPath();
+                ctx.arc(player.x + player.width/2, player.y + player.width/2 + 8, player.width/5, 0, Math.PI, true);
+                ctx.stroke();
+            } else {
+                // Happy/neutral expression
+                ctx.beginPath();
+                ctx.arc(player.x + player.width/2, player.y + player.width/2 + 5, player.width/5, 0, Math.PI);
+                ctx.stroke();
+            }
+            
+            // Power-up effect - subtle visual indicator
+            if (player.powerUp) {
+                let glowColor;
+                
+                switch(player.powerUpType) {
+                    case 'earlyRise':
+                        glowColor = "#3a7a5f"; // Green-blue
+                        break;
+                    case 'earlySleep':
+                        glowColor = "#5a5a8f"; // Purple-blue
+                        break;
+                    case 'healthyFood':
+                        glowColor = "#3a7a5f"; // Green
+                        break;
+                    case 'exercise':
+                        glowColor = "#d3873e"; // Orange
+                        break;
+                    case 'companion':
+                        glowColor = "#2a6496"; // Blue
+                        break;
+                    default:
+                        glowColor = "#495057"; // Default gray
+                }
+                
+                // Subtle glow effect
+                ctx.strokeStyle = glowColor;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(player.x + player.width/2, player.y + player.height/2, player.width*0.9, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            // Draw companion if active - minimalist style
+            if (player.companion && player.powerUp) {
+                // Draw companion
+                ctx.fillStyle = "#2a6496"; // Blue
+                
+                // Companion body
+                roundRect(ctx, player.x - 40, player.y + player.width, 30, player.height - player.width, 8, true, false);
+                
+                // Companion head
+                ctx.beginPath();
+                ctx.arc(player.x - 25, player.y + player.width/2, player.width/2.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Companion face
+                ctx.strokeStyle = "#e9ecef";
+                ctx.lineWidth = 1.5;
+                
+                // Eyes
+                ctx.beginPath();
+                ctx.arc(player.x - 30, player.y + player.width/2 - 3, 2, 0, Math.PI * 2);
+                ctx.arc(player.x - 20, player.y + player.width/2 - 3, 2, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Smile
+                ctx.beginPath();
+                ctx.arc(player.x - 25, player.y + player.width/2 + 5, 5, 0, Math.PI);
+                ctx.stroke();
+                
+                // Draw minimal speech indicator
+                ctx.fillStyle = "#e9ecef";
+                ctx.beginPath();
+                ctx.arc(player.x - 45, player.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    // Add achievement notification
+        function addAchievement(text) {
+            const achievementsDiv = document.getElementById('achievements');
+            const achievement = document.createElement('div');
+            achievement.className = 'achievement';
+            achievement.textContent = text;
+            achievementsDiv.appendChild(achievement);
+            
+            // Show achievements panel
+            achievementsDiv.style.display = 'block';
+            
+            // Display popup message
+            showPopupMessage(`הישג חדש: ${text}`, 3000);
+            
+            // Add some bonus points
+            score += 1000;
+            updateDisplay();
+        }
+        
+        // Update display
+        function updateDisplay() {
+            document.getElementById('score-display').textContent = `סך נכסים פיננסיים: ${score.toLocaleString()} ש"ח`;
+            document.getElementById('date-display').textContent = monthNames[currentMonth];
+            
+            // Update monthly stats
+            document.getElementById('expenses').textContent = stats.expenses.toLocaleString();
+            document.getElementById('income').textContent = stats.income.toLocaleString();
+        }
+        
+        // Show job offer
+        function showJobOffer() {
+            gamePaused = true;
+            jobOfferStage = 0;
+            document.getElementById('job-offer').style.display = 'block';
+        }
+        
+        // Show job offer followup
+        function showJobOfferFollowup() {
+            document.getElementById('job-offer').style.display = 'none';
+            document.getElementById('followup-text').textContent = jobOfferTexts[jobOfferStage];
+            document.getElementById('job-offer-followup').style.display = 'block';
+        }
+        
+        // Game over
+        function gameOver(reason) {
+            gameRunning = false;
+            document.getElementById('game-over-reason').textContent = reason;
+            document.getElementById('final-score').textContent = score.toLocaleString();
+            
+            // Update game stats
+            document.getElementById('months-played').textContent = stats.monthsPlayed;
+            document.getElementById('powerups-collected').textContent = stats.powerupsCollected;
+            document.getElementById('obstacles-avoided').textContent = stats.obstaclesFaced;
+            
+            document.getElementById('game-over').style.display = 'block';
+        }
+        
+        // Win game
+        function winGame() {
+            gameRunning = false;
+            
+            // Update win stats
+            document.getElementById('win-months').textContent = stats.monthsPlayed;
+            document.getElementById('win-powerups').textContent = stats.powerupsCollected;
+            document.getElementById('win-obstacles').textContent = stats.obstaclesFaced;
+            
+            document.getElementById('win-screen').style.display = 'block';
+        }
+        
+        // Reset game
+        function resetGame() {
+            gameRunning = true;
+            gamePaused = false;
+            score = 0;
+            currentMonth = 0;
+            currentMonthTimer = 0;
+            obstacles = [];
+            powerups = [];
+            pendingObstacles = [];
+            isMoving = false;
+            
+            // Clear any existing timers
+            if (moveTimer) {
+                clearTimeout(moveTimer);
+                moveTimer = null;
+            }
+            
+            if (financeMessageTimer) {
+                clearTimeout(financeMessageTimer);
+                financeMessageTimer = null;
+            }
+            
+            // Reset stats
+            stats = {
+                monthsPlayed: 0,
+                powerupsCollected: 0,
+                obstaclesAvoided: 0,
+                obstaclesFaced: 0,
+                expenses: 0,
+                income: 5000,
+                mentalHealth: 100,
+                physicalHealth: 100
+            };
+            
+            // Reset achievements
+            achievements = {
+                firstMonth: { earned: false, text: "הישרדות חודש ראשון" },
+                saveHero: { earned: false, text: "חסכת 50,000 ש\"ח" },
+                powerCollector: { earned: false, text: "אימצת 10 הרגלים פיננסיים חיוביים" },
+                resistanceMaster: { earned: false, text: "פתרת 20 דילמות פיננסיות" },
+                mentalStrength: { earned: false, text: "שמרת על חוסן מנטלי גבוה" }
+            };
+            
+            // Reset player
+            player.powerUp = false;
+            player.powerUpTime = 0;
+            player.companion = false;
+            player.currentSpeed = player.baseSpeed;
+            
+            // Adjust player size based on screen dimensions
+            let scaleFactor = Math.min(window.innerWidth, window.innerHeight) / 500;
+            scaleFactor = Math.max(0.5, Math.min(1.5, scaleFactor)); // Limit between 0.5 and 1.5
+            player.width = 50 * scaleFactor;
+            player.height = 80 * scaleFactor;
+            
+            // Update player position after size change
+            player.y = ground.y - player.height;
+            
+            // Reset displays
+            updateDisplay();
+            updatePlayerCondition();
+            
+            // Clear achievements
+            document.getElementById('achievements').innerHTML = '';
+            document.getElementById('achievements').style.display = 'none';
+            
+            // Hide status displays
+            document.getElementById('status-negative').style.display = 'none';
+            document.getElementById('status-weight').style.display = 'none';
+            
+            // Hide power meter
+            document.getElementById('power-meter').style.display = 'none';
+            
+            // Hide all dialogs
+            document.getElementById('job-offer').style.display = 'none';
+            document.getElementById('job-offer-followup').style.display = 'none';
+            document.getElementById('obstacle-dialog').style.display = 'none';
+            document.getElementById('powerup-dialog').style.display = 'none';
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('win-screen').style.display = 'none';
+            document.getElementById('tutorial-message').style.display = 'block';
+            document.getElementById('movement-instruction').style.display = 'none';
+            
+            // Reset finance tip
+            document.getElementById('finance-tip').style.opacity = '0';
+            
+            // Reset obstacle dialog tracking
+            currentObstacle = null;
+            lastObstacleTime = 0;
+            persuasionStage = 0;
+            
+            // Reset powerup dialog tracking
+            currentPowerup = null;
+            powerupFollowupIndex = 0;
+        }
+        
+        // Handle movement events
+        function startMoving() {
+            isMoving = true;
+            document.getElementById('movement-instruction').style.display = 'none';
+            
+            if (moveTimer) {
+                clearTimeout(moveTimer);
+                moveTimer = null;
+            }
+        }
+        
+        function stopMoving() {
+            isMoving = false;
+        }
+        
+        // Handle window resize
+        function handleResize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            ground.y = canvas.height * 0.8;
+            ground.width = canvas.width;
+            ground.height = canvas.height * 0.2;
+            
+            // Adjust player size and position based on screen dimensions
+            let scaleFactor = Math.min(window.innerWidth, window.innerHeight) / 500;
+            scaleFactor = Math.max(0.5, Math.min(1.5, scaleFactor)); // Limit between 0.5 and 1.5
+            
+            player.width = 50 * scaleFactor;
+            player.height = 80 * scaleFactor;
+            player.y = ground.y - player.height;
+            
+            // Adjust player base speed for screen size
+            player.baseSpeed = 5 * scaleFactor;
+            updatePlayerCondition(); // Update speed based on health
+        }
+        
+        // Helper function to schedule obstacles
+        function scheduleObstacle(delayMs) {
+            pendingObstacles.push({
+                time: Date.now() + delayMs
+            });
+        }
+        
+        // Mobile-specific optimizations
+        function optimizeForMobile() {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Reduce visual effects for better performance
+                const style = document.createElement('style');
+                style.textContent = `
+                    @media (max-width: 768px) {
+                        #game-canvas {
+                            image-rendering: optimizeSpeed;
+                        }
+                        .health-bars {
+                            width: 220px;
+                            padding: 10px;
+                        }
+                        .health-bar .label {
+                            font-size: 12px;
+                        }
+                        .health-bar .bar {
+                            height: 10px;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+        
+        // Start game
+        function startGame() {
+            // Initialize the game
+            resetGame();
+            
+            // Handle resize event
+            window.removeEventListener('resize', handleResize);
+            window.addEventListener('resize', handleResize);
+            handleResize();
+            
+            // Show tutorial initially
+            tutorialShown = true;
+            document.getElementById('tutorial-message').style.display = 'block';
+            
+            // Game loop - run at 60fps
+            const gameLoop = setInterval(() => {
+                if (gameRunning) {
+                    updateGame();
+                }
+            }, frameTime);
+        }
+        
+        // Event listeners - keydown and keyup for space key
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space') {
+                if (tutorialShown) {
+                    tutorialShown = false;
+                    document.getElementById('tutorial-message').style.display = 'none';
+                    return;
+                }
+                
+                if (gameRunning && !gamePaused) {
+                    startMoving();
+                }
+            }
+        });
+        
+        document.addEventListener('keyup', function(event) {
+            if (event.code === 'Space') {
+                if (gameRunning && !gamePaused) {
+                    stopMoving();
+                }
+            }
+        });
+        
+        // Canvas touch events for mobile
+        canvas.addEventListener('touchstart', function(event) {
+            event.preventDefault();
+            
+            if (tutorialShown) {
+                tutorialShown = false;
+                document.getElementById('tutorial-message').style.display = 'none';
+                return;
+            }
+            
+            if (gameRunning && !gamePaused) {
+                startMoving();
+            }
+        });
+        
+        canvas.addEventListener('touchend', function(event) {
+            event.preventDefault();
+            
+            if (gameRunning && !gamePaused) {
+                stopMoving();
+            }
+        });
+        
+        // Canvas mouse events
+        canvas.addEventListener('mousedown', function() {
+            if (tutorialShown) {
+                tutorialShown = false;
+                document.getElementById('tutorial-message').style.display = 'none';
+                return;
+            }
+            
+            if (gameRunning && !gamePaused) {
+                startMoving();
+            }
+        });
+        
+        canvas.addEventListener('mouseup', function() {
+            if (gameRunning && !gamePaused) {
+                stopMoving();
+            }
+        });
+        
+        // Leave canvas event - stop moving if cursor leaves canvas
+        canvas.addEventListener('mouseleave', function() {
+            if (gameRunning && !gamePaused) {
+                stopMoving();
+            }
+        });
+        
+        // Obstacle dialog buttons
+        document.getElementById('ignore-btn').addEventListener('click', function() {
+            continuePersuasion(); // Continue to next persuasion stage or close dialog
+        });
+        
+        document.getElementById('accept-btn').addEventListener('click', function() {
+            acceptObstacle(); // Accept obstacle with all negative consequences
+        });
+        
+        // Powerup dialog buttons
+        document.getElementById('powerup-yes-btn').addEventListener('click', function() {
+            powerupYesResponse();
+        });
+        
+        document.getElementById('powerup-no-btn').addEventListener('click', function() {
+            powerupNoResponse();
+        });
+        
+        // Start button click
+        document.getElementById('start-btn').addEventListener('click', function() {
+            tutorialShown = false;
+            document.getElementById('tutorial-message').style.display = 'none';
+        });
+        
+        // Job offer buttons
+        document.getElementById('yes-btn').addEventListener('click', function() {
+            gameOver("החלפת קריירה. איבדת את היציבות הפיננסית בתקופת המעבר.");
+        });
+        
+        document.getElementById('no-btn').addEventListener('click', function() {
+            showJobOfferFollowup();
+        });
+        
+        document.getElementById('followup-yes-btn').addEventListener('click', function() {
+            gameOver("החלפת קריירה. איבדת את היציבות הפיננסית בתקופת המעבר.");
+        });
+        
+        document.getElementById('followup-no-btn').addEventListener('click', function() {
+            jobOfferStage++;
+            if (jobOfferStage < jobOfferTexts.length) {
+                document.getElementById('followup-text').textContent = jobOfferTexts[jobOfferStage];
+            } else {
+                document.getElementById('job-offer-followup').style.display = 'none';
+                gamePaused = false;
+                
+                // Reward player for resisting temptation
+                score += 1500;
+                // Also boost mental health
+                stats.mentalHealth = Math.min(100, stats.mentalHealth + 10);
+                updatePlayerCondition();
+                showPopupMessage("תגמול על התמדה בקריירה: 1,500 ש\"ח", 2500);
+                updateDisplay();
+            }
+        });
+        
+        // Game over buttons
+        document.getElementById('restart-btn').addEventListener('click', function() {
+            resetGame();
+        });
+        
+        document.getElementById('play-again-btn').addEventListener('click', function() {
+            resetGame();
+        });
+        
+        // Initialize the game when the page loads
+        window.onload = function() {
+            optimizeForMobile();
+            startGame();
+        };
+    </script>
+</body>
+</html>
