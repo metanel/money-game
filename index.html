@@ -6272,3 +6272,693 @@
                 }
             }, fallDuration * 1000 + 100);
         }
+        // Reset game with enhanced transitions
+        function resetGame() {
+            // Fade out current game state
+            const fadeOverlay = document.createElement('div');
+            fadeOverlay.className = 'fade-overlay';
+            fadeOverlay.style.position = 'absolute';
+            fadeOverlay.style.top = '0';
+            fadeOverlay.style.left = '0';
+            fadeOverlay.style.width = '100%';
+            fadeOverlay.style.height = '100%';
+            fadeOverlay.style.backgroundColor = 'rgba(255, 255, 255, 0)';
+            fadeOverlay.style.transition = 'background-color 0.8s ease';
+            fadeOverlay.style.zIndex = '150';
+            
+            document.getElementById('game-container').appendChild(fadeOverlay);
+            
+            // Fade to white
+            setTimeout(() => {
+                fadeOverlay.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+            }, 100);
+            
+            // After fade out, reset game state
+            setTimeout(() => {
+                // Initialize game variables
+                gameRunning = true;
+                gamePaused = false;
+                score = 0;
+                currentMonth = 0;
+                currentMonthTimer = 0;
+                obstacles = [];
+                powerups = [];
+                pendingObstacles = [];
+                isMoving = false;
+                
+                // Reset clock to 5:00 AM
+                currentHour = 5;
+                currentMinute = 0;
+                isDayTime = true;
+                
+                // Clear any existing timers
+                if (moveTimer) {
+                    clearTimeout(moveTimer);
+                    moveTimer = null;
+                }
+                
+                if (financeMessageTimer) {
+                    clearTimeout(financeMessageTimer);
+                    financeMessageTimer = null;
+                }
+                
+                // Reset stats
+                stats = {
+                    monthsPlayed: 0,
+                    powerupsCollected: 0,
+                    obstaclesAvoided: 0,
+                    obstaclesFaced: 0,
+                    expenses: 0,
+                    income: 5000,
+                    mentalHealth: 100,
+                    physicalHealth: 100
+                };
+                
+                // Reset monthly counters
+                monthlyObstacleCounter = {
+                    person: 0,
+                    ad: 0,
+                    food: 0
+                };
+                
+                monthlyPowerupCounter = {
+                    money: 0,
+                    earlyRise: 0,
+                    earlySleep: 0,
+                    healthyFood: 0,
+                    exercise: 0,
+                    companion: 0
+                };
+                
+                // Reset achievements
+                achievements = {
+                    firstMonth: { earned: false, text: "הישרדות חודש ראשון" },
+                    saveHero: { earned: false, text: "חסכת 50,000 ש\"ח" },
+                    powerCollector: { earned: false, text: "אימצת 10 הרגלים פיננסיים חיוביים" },
+                    resistanceMaster: { earned: false, text: "פתרת 20 דילמות פיננסיות" },
+                    mentalStrength: { earned: false, text: "שמרת על חוסן מנטלי גבוה" }
+                };
+                
+                // Reset player
+                player.powerUp = false;
+                player.powerUpTime = 0;
+                player.companion = false;
+                player.currentSpeed = player.baseSpeed;
+                
+                // Adjust player size based on screen dimensions
+                let scaleFactor = Math.min(window.innerWidth, window.innerHeight) / 500;
+                scaleFactor = Math.max(0.5, Math.min(1.5, scaleFactor)); // Limit between 0.5 and 1.5
+                player.width = 50 * scaleFactor;
+                player.height = 80 * scaleFactor;
+                
+                // Update player position after size change
+                player.y = ground.y - player.height;
+                
+                // Reset displays
+                updateDisplay();
+                updatePlayerCondition();
+                updateClockDisplay();
+                
+                // Clear achievements
+                document.getElementById('achievements').innerHTML = '';
+                document.getElementById('achievements').style.display = 'none';
+                
+                // Hide status displays
+                document.getElementById('status-negative').style.display = 'none';
+                document.getElementById('status-weight').style.display = 'none';
+                
+                // Hide power meter
+                document.getElementById('power-meter').style.display = 'none';
+                
+                // Hide all dialogs
+                document.getElementById('job-offer').style.display = 'none';
+                document.getElementById('job-offer-followup').style.display = 'none';
+                document.getElementById('obstacle-dialog').style.display = 'none';
+                document.getElementById('powerup-dialog').style.display = 'none';
+                document.getElementById('game-over').style.display = 'none';
+                document.getElementById('win-screen').style.display = 'none';
+                
+                // Remove any career or persuasion icons
+                const careerIcon = document.querySelector('.career-icon');
+                if (careerIcon && careerIcon.parentNode) {
+                    careerIcon.parentNode.removeChild(careerIcon);
+                }
+                
+                const persuasionIcon = document.querySelector('.persuasion-icon');
+                if (persuasionIcon && persuasionIcon.parentNode) {
+                    persuasionIcon.parentNode.removeChild(persuasionIcon);
+                }
+                
+                // Remove any overlays
+                document.querySelectorAll('.job-offer-overlay, .win-overlay, .game-over-overlay, .ground-crack').forEach(elem => {
+                    if (elem.parentNode) {
+                        elem.parentNode.removeChild(elem);
+                    }
+                });
+                
+                // Reset tutorial and show it
+                tutorialShown = true;
+                document.getElementById('tutorial-message').style.display = 'block';
+                document.getElementById('movement-instruction').style.display = 'none';
+                
+                // Reset finance tip
+                document.getElementById('finance-tip').style.opacity = '0';
+                
+                // Reset obstacle dialog tracking
+                currentObstacle = null;
+                lastObstacleTime = 0;
+                persuasionStage = 0;
+                
+                // Reset powerup dialog tracking
+                currentPowerup = null;
+                powerupFollowupIndex = 0;
+                
+                // Create new stars and environmental elements
+                createStars();
+                createClouds();
+                createBirds();
+                
+                // Fade back in
+                setTimeout(() => {
+                    fadeOverlay.style.backgroundColor = 'rgba(255, 255, 255, 0)';
+                    
+                    // Remove overlay after fade completes
+                    setTimeout(() => {
+                        if (fadeOverlay.parentNode) {
+                            fadeOverlay.parentNode.removeChild(fadeOverlay);
+                        }
+                    }, 800);
+                }, 300);
+            }, 900);
+        }
+        
+        // Handle movement events with feedback
+        function startMoving() {
+            if (!isMoving) {
+                isMoving = true;
+                document.getElementById('movement-instruction').style.display = 'none';
+                
+                // Add visual feedback for movement start
+                player.y -= 2; // Slight upward jump
+                
+                // Create dust particles at player's feet
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        createDustParticle();
+                    }, i * 100);
+                }
+                
+                if (moveTimer) {
+                    clearTimeout(moveTimer);
+                    moveTimer = null;
+                }
+            }
+        }
+        
+        function stopMoving() {
+            if (isMoving) {
+                isMoving = false;
+                player.y += 2; // Return to original position
+                
+                // Create stopping dust effect
+                createDustParticle();
+            }
+        }
+        
+        // Handle window resize with smooth transitions
+        function handleResize() {
+            // Store old dimensions for transition calculations
+            const oldWidth = canvas.width;
+            const oldHeight = canvas.height;
+            const oldGroundY = ground.y;
+            
+            // Update canvas dimensions
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Update ground position
+            ground.y = canvas.height * 0.8;
+            ground.width = canvas.width;
+            ground.height = canvas.height * 0.2;
+            
+            // Adjust player size and position based on screen dimensions
+            let scaleFactor = Math.min(window.innerWidth, window.innerHeight) / 500;
+            scaleFactor = Math.max(0.5, Math.min(1.5, scaleFactor)); // Limit between 0.5 and 1.5
+            
+            player.width = 50 * scaleFactor;
+            player.height = 80 * scaleFactor;
+            
+            // Maintain relative position to ground
+            player.y = ground.y - player.height;
+            
+            // Scale player's X position proportionally to new width
+            player.x = (player.x / oldWidth) * canvas.width;
+            
+            // Adjust player base speed for screen size
+            player.baseSpeed = 5 * scaleFactor;
+            updatePlayerCondition(); // Update speed based on health
+            
+            // Update positions of obstacles and powerups
+            obstacles.forEach(obstacle => {
+                // Scale X position proportionally
+                obstacle.x = (obstacle.x / oldWidth) * canvas.width;
+                
+                // Adjust Y position relative to new ground
+                const oldRelativeY = (obstacle.y - oldGroundY) / (oldHeight - oldGroundY);
+                obstacle.y = ground.y + oldRelativeY * (canvas.height - ground.y);
+            });
+            
+            powerups.forEach(powerup => {
+                // Scale X position proportionally
+                powerup.x = (powerup.x / oldWidth) * canvas.width;
+                
+                // Adjust Y position relative to new ground
+                const oldRelativeY = powerup.y / oldHeight;
+                powerup.y = oldRelativeY * canvas.height;
+                
+                // Update original Y for floating animation
+                if (powerup.originalY) {
+                    powerup.originalY = powerup.y;
+                }
+            });
+            
+            // Recreate environmental elements for new dimensions
+            createStars();
+            createClouds();
+            
+            // Adjust sun and moon positions
+            updateCelestialBodies();
+        }
+        
+        // Helper function to schedule obstacles
+        function scheduleObstacle(delayMs) {
+            pendingObstacles.push({
+                time: Date.now() + delayMs
+            });
+        }
+        
+        // Mobile-specific optimizations
+        function optimizeForMobile() {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // Reduce visual effects for better performance
+                const style = document.createElement('style');
+                style.textContent = `
+                    @media (max-width: 768px) {
+                        #game-canvas {
+                            image-rendering: optimizeSpeed;
+                        }
+                        .health-bars {
+                            width: 220px;
+                            padding: 10px;
+                        }
+                        .health-bar .label {
+                            font-size: 12px;
+                        }
+                        .health-bar .bar {
+                            height: 10px;
+                        }
+                        
+                        /* Reduce particle effects on mobile */
+                        .dust-particle, .powerup-particle, .companion-particle {
+                            opacity: 0.7 !important;
+                        }
+                        
+                        /* Smaller celestial bodies */
+                        #sun, #moon {
+                            width: 40px !important;
+                            height: 40px !important;
+                        }
+                        
+                        /* Fewer stars for better performance */
+                        .star {
+                            opacity: 0.5 !important;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // Reduce number of particles in effects
+                const originalCreateDustParticle = createDustParticle;
+                createDustParticle = function() {
+                    if (Math.random() < 0.5) { // Only create dust particles 50% of the time
+                        originalCreateDustParticle();
+                    }
+                };
+                
+                // Reduce firework particles
+                const originalCreateFirework = createFirework;
+                createFirework = function() {
+                    const tempCreate = (Math.random() < 0.8); // 80% chance to create
+                    if (tempCreate) {
+                        originalCreateFirework();
+                    }
+                };
+            }
+        }
+        
+        // Start game with enhanced initialization
+        function startGame() {
+            // Initialize the game with fade-in effect
+            resetGame();
+            
+            // Handle resize event
+            window.removeEventListener('resize', handleResize);
+            window.addEventListener('resize', handleResize);
+            handleResize();
+            
+            // Show tutorial initially
+            tutorialShown = true;
+            document.getElementById('tutorial-message').style.display = 'block';
+            
+            // Add welcome message
+            showWelcomeMessage();
+            
+            // Game loop - run at 60fps
+            const gameLoop = setInterval(() => {
+                if (gameRunning) {
+                    updateGame();
+                }
+            }, frameTime);
+        }
+        
+        // Show welcome message with enhanced visuals
+        function showWelcomeMessage() {
+            // Create animated welcome banner
+            const banner = document.createElement('div');
+            banner.className = 'welcome-banner';
+            banner.style.position = 'absolute';
+            banner.style.top = '20%';
+            banner.style.left = '50%';
+            banner.style.transform = 'translate(-50%, -50%)';
+            banner.style.fontSize = '40px';
+            banner.style.fontWeight = 'bold';
+            banner.style.color = 'var(--primary-color)';
+            banner.style.textShadow = '0 0 10px rgba(42, 100, 150, 0.5)';
+            banner.style.zIndex = '150';
+            banner.style.opacity = '0';
+            banner.style.textAlign = 'center';
+            banner.innerHTML = 'ברוכים הבאים<br>למשחק המשמעת הפיננסית';
+            
+            document.getElementById('game-container').appendChild(banner);
+            
+            // Define animation
+            const bannerStyle = document.createElement('style');
+            bannerStyle.textContent = `
+                @keyframes welcome-banner {
+                    0% { opacity: 0; transform: translate(-50%, -70%) scale(0.8); }
+                    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+                    40% { transform: translate(-50%, -50%) scale(1); }
+                    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                    100% { opacity: 0; transform: translate(-50%, -30%) scale(0.9); }
+                }
+            `;
+            document.head.appendChild(bannerStyle);
+            
+            // Apply animation
+            banner.style.animation = 'welcome-banner 4s ease-out forwards';
+            
+            // Remove banner after animation
+            setTimeout(() => {
+                if (banner.parentNode) {
+                    banner.parentNode.removeChild(banner);
+                }
+                if (bannerStyle.parentNode) {
+                    bannerStyle.parentNode.removeChild(bannerStyle);
+                }
+            }, 4100);
+        }
+        
+        // Event listeners - keydown and keyup for space key
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space') {
+                if (tutorialShown) {
+                    tutorialShown = false;
+                    document.getElementById('tutorial-message').style.display = 'none';
+                    return;
+                }
+                
+                if (gameRunning && !gamePaused) {
+                    startMoving();
+                }
+            }
+        });
+        
+        document.addEventListener('keyup', function(event) {
+            if (event.code === 'Space') {
+                if (gameRunning && !gamePaused) {
+                    stopMoving();
+                }
+            }
+        });
+        
+        // Canvas touch events for mobile
+        canvas.addEventListener('touchstart', function(event) {
+            event.preventDefault();
+            
+            if (tutorialShown) {
+                tutorialShown = false;
+                document.getElementById('tutorial-message').style.display = 'none';
+                return;
+            }
+            
+            if (gameRunning && !gamePaused) {
+                startMoving();
+            }
+        });
+        
+        canvas.addEventListener('touchend', function(event) {
+            event.preventDefault();
+            
+            if (gameRunning && !gamePaused) {
+                stopMoving();
+            }
+        });
+        
+        // Canvas mouse events
+        canvas.addEventListener('mousedown', function() {
+            if (tutorialShown) {
+                tutorialShown = false;
+                document.getElementById('tutorial-message').style.display = 'none';
+                return;
+            }
+            
+            if (gameRunning && !gamePaused) {
+                startMoving();
+            }
+        });
+        
+        canvas.addEventListener('mouseup', function() {
+            if (gameRunning && !gamePaused) {
+                stopMoving();
+            }
+        });
+        
+        // Leave canvas event - stop moving if cursor leaves canvas
+        canvas.addEventListener('mouseleave', function() {
+            if (gameRunning && !gamePaused) {
+                stopMoving();
+            }
+        });
+        
+        // Obstacle dialog buttons
+        document.getElementById('ignore-btn').addEventListener('click', function() {
+            continuePersuasion(); // Continue to next persuasion stage or close dialog
+        });
+        
+        document.getElementById('accept-btn').addEventListener('click', function() {
+            acceptObstacle(); // Accept obstacle with all negative consequences
+        });
+        
+        // Powerup dialog buttons
+        document.getElementById('powerup-yes-btn').addEventListener('click', function() {
+            powerupYesResponse();
+        });
+        
+        document.getElementById('powerup-no-btn').addEventListener('click', function() {
+            powerupNoResponse();
+        });
+        
+        // Start button click
+        document.getElementById('start-btn').addEventListener('click', function() {
+            tutorialShown = false;
+            
+            // Add button press animation
+            const button = document.getElementById('start-btn');
+            button.style.transform = 'scale(0.95)';
+            button.style.backgroundColor = '#1e5180';
+            
+            // Reset after short delay
+            setTimeout(() => {
+                button.style.transform = '';
+                button.style.backgroundColor = '';
+                
+                // Hide tutorial with fade out
+                const tutorial = document.getElementById('tutorial-message');
+                tutorial.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                tutorial.style.opacity = '0';
+                tutorial.style.transform = 'translate(-50%, -40%)';
+                
+                // Hide completely after animation
+                setTimeout(() => {
+                    tutorial.style.display = 'none';
+                    // Reset styles for future use
+                    tutorial.style.opacity = '1';
+                    tutorial.style.transform = 'translate(-50%, -50%)';
+                }, 300);
+            }, 100);
+        });
+        
+        // Job offer buttons
+        document.getElementById('yes-btn').addEventListener('click', function() {
+            gameOver("החלפת קריירה. איבדת את היציבות הפיננסית בתקופת המעבר.");
+        });
+        
+        document.getElementById('no-btn').addEventListener('click', function() {
+            showJobOfferFollowup();
+        });
+        
+        document.getElementById('followup-yes-btn').addEventListener('click', function() {
+            gameOver("החלפת קריירה. איבדת את היציבות הפיננסית בתקופת המעבר.");
+        });
+        
+        document.getElementById('followup-no-btn').addEventListener('click', function() {
+            jobOfferStage++;
+            if (jobOfferStage < jobOfferTexts.length) {
+                // Update text with animation
+                const textElement = document.getElementById('followup-text');
+                
+                // Fade out current text
+                textElement.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                textElement.style.opacity = '0';
+                textElement.style.transform = 'translateY(-10px)';
+                
+                // Update text and fade in
+                setTimeout(() => {
+                    textElement.textContent = jobOfferTexts[jobOfferStage];
+                    textElement.style.opacity = '1';
+                    textElement.style.transform = 'translateY(0)';
+                }, 200);
+                
+                // Update icon
+                const icon = document.querySelector('.persuasion-icon');
+                if (icon) {
+                    // Animate icon change
+                    icon.style.transform = 'translateX(-50%) scale(0.8)';
+                    icon.style.opacity = '0.5';
+                    
+                    setTimeout(() => {
+                        // Change icon based on stage
+                        let persuasionIcon = '💰'; // Default money
+                        if (jobOfferStage === 1) persuasionIcon = '📈'; // Growth
+                        if (jobOfferStage === 2) persuasionIcon = '🚀'; // Career
+                        if (jobOfferStage === 3) persuasionIcon = '⏱️'; // Time/flexibility
+                        
+                        icon.textContent = persuasionIcon;
+                        icon.style.transform = 'translateX(-50%) scale(1.2)';
+                        icon.style.opacity = '1';
+                        
+                        // Reset after animation
+                        setTimeout(() => {
+                            icon.style.transform = 'translateX(-50%) scale(1)';
+                        }, 200);
+                    }, 200);
+                }
+            } else {
+                // Exit animation for dialog
+                const followupDialog = document.getElementById('job-offer-followup');
+                followupDialog.style.animation = 'job-followup-exit 0.3s ease forwards';
+                
+                // Add exit animation style if not already present
+                if (!document.getElementById('job-followup-exit-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'job-followup-exit-style';
+                    style.textContent = `
+                        @keyframes job-followup-exit {
+                            from {
+                                opacity: 1;
+                                transform: translate(-50%, -50%) scale(1);
+                            }
+                            to {
+                                opacity: 0;
+                                transform: translate(-50%, -40%) scale(0.95);
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                
+                // Remove overlay
+                const overlay = document.querySelector('.job-offer-overlay');
+                if (overlay) {
+                    overlay.style.opacity = '0';
+                    setTimeout(() => {
+                        if (overlay.parentNode) {
+                            overlay.parentNode.removeChild(overlay);
+                        }
+                    }, 500);
+                }
+                
+                // Hide dialog after animation
+                setTimeout(() => {
+                    followupDialog.style.display = 'none';
+                    
+                    // Remove icon
+                    const icon = document.querySelector('.persuasion-icon');
+                    if (icon && icon.parentNode) {
+                        icon.parentNode.removeChild(icon);
+                    }
+                    
+                    gamePaused = false;
+                    
+                    // Reward player for resisting temptation
+                    score += 1500;
+                    
+                    // Also boost mental health
+                    stats.mentalHealth = Math.min(100, stats.mentalHealth + 10);
+                    updatePlayerCondition();
+                    
+                    // Show reward effect
+                    showCoinAnimation(1500);
+                    showPopupMessage("תגמול על התמדה בקריירה: 1,500 ש\"ח", 2500);
+                    updateDisplay();
+                }, 300);
+            }
+        });
+        
+        // Game over buttons
+        document.getElementById('restart-btn').addEventListener('click', function() {
+            // Button press animation
+            const button = document.getElementById('restart-btn');
+            button.style.transform = 'scale(0.95)';
+            
+            // Reset after short delay
+            setTimeout(() => {
+                button.style.transform = '';
+                resetGame();
+            }, 100);
+        });
+        
+        document.getElementById('play-again-btn').addEventListener('click', function() {
+            // Button press animation
+            const button = document.getElementById('play-again-btn');
+            button.style.transform = 'scale(0.95)';
+            
+            // Reset after short delay
+            setTimeout(() => {
+                button.style.transform = '';
+                resetGame();
+            }, 100);
+        });
+        
+        // Initialize the game when the page loads
+        window.onload = function() {
+            optimizeForMobile();
+            createStars();
+            createClouds();
+            startGame();
+        };
+    </script>
+</body>
+</html>
