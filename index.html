@@ -353,19 +353,22 @@
         }
         
         #movement-instruction {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 10px 20px;
-            background-color: rgba(50, 50, 50, 0.8);
-            color: white;
-            border-radius: 5px;
-            font-size: 16px;
-            display: none;
-            z-index: 15;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
+    position: absolute;
+    top: 50%; /* שינוי ממיקום בתחתית למיקום במרכז האנכי */
+    left: 50%;
+    transform: translate(-50%, -50%); /* שינוי לתרגום דו-כיווני */
+    padding: 15px 30px; /* הגדלת הריפוד */
+    background-color: rgba(50, 50, 50, 0.8);
+    color: white;
+    border-radius: 8px; /* הגדלת הפינות המעוגלות */
+    font-size: 24px; /* הגדלת גודל הגופן */
+    font-weight: bold; /* הוספת הדגשה */
+    display: none;
+    z-index: 25; /* הגדלת z-index כדי להבטיח שיופיע מעל אלמנטים אחרים */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* הגדלת הצללה */
+    text-align: center; /* מרכוז טקסט */
+    max-width: 80%; /* הגבלת רוחב מקסימלי */
+}
         
         /* Health indicators in center */
         .health-bars {
@@ -611,7 +614,7 @@
         <div id="status-negative" class="status-effect">השפעה מנטלית: חלש</div>
         <div id="status-weight" class="status-effect">מצב גופני: כבד</div>
         <div id="speed-indicator">מהירות: רגילה</div>
-        <div id="movement-instruction">לחץ על המסך להמשיך בדרך הפיננסית שלך</div>
+        <div id="movement-instruction">לחץ על המסך כדי להתקדם!<br><span style="font-size: 16px; font-weight: normal; opacity: 0.9;">בלי לחיצה אין התקדמות</span></div>
         
         <!-- דיאלוג הפאוור-אפים החדש -->
         <div id="powerup-dialog" class="dialog-box">
@@ -1491,11 +1494,25 @@ function createCompanion() {
                     document.getElementById('movement-instruction').style.display = 'none';
                 }
             } else {
-                // Show movement instructions if player doesn't move for a few seconds
-                if (!moveTimer && !tutorialShown) {
-                    moveTimer = setTimeout(() => {
-                        document.getElementById('movement-instruction').style.display = 'block';
-                    }, 5000);
+// Show movement instructions if player doesn't move for a few seconds - shorter time, more prominent
+if (!moveTimer && !tutorialShown) {
+    moveTimer = setTimeout(() => {
+        document.getElementById('movement-instruction').style.display = 'block';
+        // הוספת אפקט הבהוב להגברת הבולטות
+        let blinkCount = 0;
+        const blinkInterval = setInterval(() => {
+            if (blinkCount >= 6 || isMoving) { // הבהוב 3 פעמים (כבוי-דלוק) או עד שהשחקן זז
+                clearInterval(blinkInterval);
+                document.getElementById('movement-instruction').style.opacity = '1';
+                return;
+            }
+            
+            const elem = document.getElementById('movement-instruction');
+            elem.style.opacity = elem.style.opacity === '0.3' ? '1' : '0.3';
+            blinkCount++;
+        }, 500); // הבהוב כל חצי שנייה
+    }, 2000); // קיצור הזמן ל-2 שניות במקום 5
+}
                 }
             }
             
